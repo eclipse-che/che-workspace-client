@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+node_modules/
+src/
+test/
+preprocessor.js
+tsconfig.json
+tslint.json
