@@ -13,212 +13,206 @@ import {IWorkspace, IWorkspaceConfig} from './typings/types';
 
 export * from './typings/types';
 
-export namespace JsonRpc {
+export default class WorkspaceClient {
+    static getRestApi(config?: IRestAPIConfig): IRemoteAPI;
 
-    export function getMasterApiClient(entryPoint: string): IWorkspaceMasterApi;
+    static getRestBackend(): IBackend;
 
-    export interface IWorkspaceMasterApi {
-        /**
-         * Opens connection to pointed entryPoint.
-         *
-         * @param entryPoint
-         * @returns {Promise<any>}
-         */
-        connect(entryPoint: string): Promise<any>;
-
-        /**
-         * Subscribes the environment output.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
-
-        /**
-         * Un-subscribes the pointed callback from the environment output.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
-
-        /**
-         * Subscribes the environment status changed.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        subscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
-
-        /**
-         * Un-subscribes the pointed callback from environment status changed.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        unSubscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
-
-        /**
-         * Subscribes on workspace agent output.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        subscribeWsAgentOutput(workspaceId: string, callback: Function): void;
-
-        /**
-         * Un-subscribes from workspace agent output.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        unSubscribeWsAgentOutput(workspaceId: string, callback: Function): void;
-
-        /**
-         * Subscribes to workspace's status.
-         *
-         * @param workspaceId workspace's id
-         * @param callback callback to process event
-         */
-        subscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
-
-        /**
-         * Un-subscribes pointed callback from workspace's status.
-         *
-         * @param workspaceId
-         * @param callback
-         */
-        unSubscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
-
-        /**
-         * Subscribe to organization statuses.
-         *
-         * @param {string} organizationId organization's id
-         * @param {IClientEventHandler} callback handler
-         */
-        subscribeOrganizationStatus(organizationId: string, callback: Function): void;
-
-        /**
-         * Un-subscribe from organization status changes.
-         *
-         * @param {string} organizationId organization's id
-         * @param {IClientEventHandler} callback handler
-         */
-        unSubscribeOrganizationStatus(organizationId: string, callback: Function): void;
-
-        /**
-         * Subscribe to organization membership changes.
-         *
-         * @param {string} userId user's id to track changes
-         * @param {IClientEventHandler} callback handler
-         */
-        subscribeOrganizationMembershipStatus(userId: string, callback: Function): void;
-
-        /**
-         * Un-subscribe from organization membership changes.
-         *
-         * @param {string} userId user's id to untrack changes
-         * @param {IClientEventHandler} callback handler
-         */
-        unSubscribeOrganizationMembershipStatus(userId: string, callback: Function): void;
-
-        /**
-         * Fetch client's id and stores it.
-         *
-         * @returns {Promise<any>}
-         */
-        fetchClientId(): Promise<any>;
-
-        /**
-         * Returns client's id.
-         *
-         * @returns {string} client connection identifier
-         */
-        getClientId(): string;
-    }
-
+    static getJsonRpcApi(entryPoint: string): IWorkspaceMasterApi;
 }
 
-export namespace Rest {
+export interface IWorkspaceMasterApi {
+    /**
+     * Opens connection to pointed entryPoint.
+     *
+     * @param entryPoint
+     * @returns {Promise<any>}
+     */
+    connect(entryPoint: string): Promise<any>;
 
-    export function getBackend(): IBackend;
+    /**
+     * Subscribes the environment output.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
 
-    export function getRestApi(config?: restAPIConfig): IRemoteAPI;
+    /**
+     * Un-subscribes the pointed callback from the environment output.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
 
-    export interface IBackend {
-        install(): void;
+    /**
+     * Subscribes the environment status changed.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    subscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
 
-        uninstall(): void;
+    /**
+     * Un-subscribes the pointed callback from environment status changed.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    unSubscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
 
-        stubRequest(method: string, urlOrRegExp: string | RegExp, response: IBackendResponse): void;
+    /**
+     * Subscribes on workspace agent output.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    subscribeWsAgentOutput(workspaceId: string, callback: Function): void;
 
-        stubOnce(method: string, orlOrRegExp: string | RegExp, response: IBackendResponse): Promise<any>;
+    /**
+     * Un-subscribes from workspace agent output.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    unSubscribeWsAgentOutput(workspaceId: string, callback: Function): void;
 
-        stubFailure(method: string, orlOrRegExp: string | RegExp, response: IBackendResponse): Promise<any>;
+    /**
+     * Subscribes to workspace's status.
+     *
+     * @param workspaceId workspace's id
+     * @param callback callback to process event
+     */
+    subscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
 
-        stubTimeout(urlOrRegExp: string | RegExp): void;
+    /**
+     * Un-subscribes pointed callback from workspace's status.
+     *
+     * @param workspaceId
+     * @param callback
+     */
+    unSubscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
 
-        wait(fn: Function): Promise<any>;
+    /**
+     * Subscribe to organization statuses.
+     *
+     * @param {string} organizationId organization's id
+     * @param {IClientEventHandler} callback handler
+     */
+    subscribeOrganizationStatus(organizationId: string, callback: Function): void;
 
-        wait(delay: number, fn: Function): Promise<any>;
-    }
+    /**
+     * Un-subscribe from organization status changes.
+     *
+     * @param {string} organizationId organization's id
+     * @param {IClientEventHandler} callback handler
+     */
+    unSubscribeOrganizationStatus(organizationId: string, callback: Function): void;
 
-    export interface IBackendResponse {
-        status?: number;
-        response?: any;
-        responseText?: string;
-    }
+    /**
+     * Subscribe to organization membership changes.
+     *
+     * @param {string} userId user's id to track changes
+     * @param {IClientEventHandler} callback handler
+     */
+    subscribeOrganizationMembershipStatus(userId: string, callback: Function): void;
 
-    export type restAPIConfig = {
-        baseUrl?: string;
-        headers?: any;
-    };
+    /**
+     * Un-subscribe from organization membership changes.
+     *
+     * @param {string} userId user's id to untrack changes
+     * @param {IClientEventHandler} callback handler
+     */
+    unSubscribeOrganizationMembershipStatus(userId: string, callback: Function): void;
 
-    export interface IRemoteAPI {
-        getAll<T>(): Promise<IRequestError | T[]>;
+    /**
+     * Fetch client's id and stores it.
+     *
+     * @returns {Promise<any>}
+     */
+    fetchClientId(): Promise<any>;
 
-        getAllByNamespace<T>(namespace: string): Promise<IRequestError | T[]>;
+    /**
+     * Returns client's id.
+     *
+     * @returns {string} client connection identifier
+     */
+    getClientId(): string;
+}
 
-        getById<T>(workspaceKey: string): Promise<IRequestError | T>;
+export interface IBackend {
+    install(): void;
 
-        create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<IRequestError | any>;
+    uninstall(): void;
 
-        update(workspaceId: string, workspace: IWorkspace): Promise<IRequestError | any>;
+    stubRequest(method: string, urlOrRegExp: string | RegExp, response: IBackendResponse): void;
 
-        delete(workspaceId: string): Promise<IRequestError | any>;
+    stubOnce(method: string, orlOrRegExp: string | RegExp, response: IBackendResponse): Promise<any>;
 
-        start(workspaceId: string, environmentName: string): Promise<IRequestError | any>;
+    stubFailure(method: string, orlOrRegExp: string | RegExp, response: IBackendResponse): Promise<any>;
 
-        startTemporary(config: IWorkspaceConfig): Promise<IRequestError | any>;
+    stubTimeout(urlOrRegExp: string | RegExp): void;
 
-        stop(workspaceId: string): Promise<IRequestError | any>;
+    wait(fn: Function): Promise<any>;
 
-        getSettings<T>(): Promise<IRequestError | T>;
-    }
+    wait(delay: number, fn: Function): Promise<any>;
+}
 
-    export interface IRequestError extends Error {
-        status?: number;
-        config: any;
-        request?: any;
-        response?: IResponse<any>;
-    }
+export interface IBackendResponse {
+    status?: number;
+    response?: any;
+    responseText?: string;
+}
 
-    export interface IResponse<T> {
-        data: T;
-        status: number;
-        statusText: string;
-        headers: any;
-        config: any;
-        request?: any;
-    }
+export interface IRestAPIConfig {
+    baseUrl?: string;
+    headers?: any;
+}
 
-    export interface IResourceCreateQueryParams extends IResourceQueryParams {
-        attribute: string;
-        namespace?: string;
-    }
+export interface IRemoteAPI {
+    getAll<T>(): Promise<IRequestError | T[]>;
 
-    export interface IResourceQueryParams {
-        [propName: string]: string | any;
-    }
+    getAllByNamespace<T>(namespace: string): Promise<IRequestError | T[]>;
 
+    getById<T>(workspaceKey: string): Promise<IRequestError | T>;
+
+    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<IRequestError | any>;
+
+    update(workspaceId: string, workspace: IWorkspace): Promise<IRequestError | any>;
+
+    delete(workspaceId: string): Promise<IRequestError | any>;
+
+    start(workspaceId: string, environmentName: string): Promise<IRequestError | any>;
+
+    startTemporary(config: IWorkspaceConfig): Promise<IRequestError | any>;
+
+    stop(workspaceId: string): Promise<IRequestError | any>;
+
+    getSettings<T>(): Promise<IRequestError | T>;
+}
+
+export interface IRequestError extends Error {
+    status?: number;
+    config: any;
+    request?: any;
+    response?: IResponse<any>;
+}
+
+export interface IResponse<T> {
+    data: T;
+    status: number;
+    statusText: string;
+    headers: any;
+    config: any;
+    request?: any;
+}
+
+export interface IResourceCreateQueryParams extends IResourceQueryParams {
+    attribute: string;
+    namespace?: string;
+}
+
+export interface IResourceQueryParams {
+    [propName: string]: string | any;
 }

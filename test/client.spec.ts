@@ -12,7 +12,7 @@
 
 import {IRemoteAPI} from '../src/rest/remote-api';
 import {IBackend} from '../src/rest/backend';
-import {Rest} from '../src';
+import {WorkspaceClient} from '../src';
 
 describe('RestAPI >', () => {
 
@@ -20,8 +20,8 @@ describe('RestAPI >', () => {
     let backend: IBackend;
 
     beforeEach(() => {
-        restApi = Rest.getRestApi();
-        backend = Rest.getBackend();
+        restApi = WorkspaceClient.getRestApi();
+        backend = WorkspaceClient.getRestBackend();
 
         backend.install();
     });
