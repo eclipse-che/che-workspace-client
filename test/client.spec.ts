@@ -12,7 +12,7 @@
 
 import {IRemoteAPI} from '../src/rest/remote-api';
 import {IBackend} from '../src/rest/backend';
-import {WorkspaceClient} from '../src';
+import WorkspaceClient from '../src';
 
 describe('RestAPI >', () => {
 
