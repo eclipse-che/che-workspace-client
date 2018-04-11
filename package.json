@@ -1,0 +1,54 @@
+{
+  "name": "workspace-client",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "typings/index.d.ts",
+  "scripts": {
+    "build": "rimraf dist && webpack-cli --mode production --config webpack.config.js",
+    "test": "jest",
+    "prepare": "npm run test && npm run build"
+  },
+  "contributors": [
+    {
+      "name": "Oleksii Kurinnyi",
+      "email": "okurinny@redhat.com"
+    }
+  ],
+  "license": "EPL-2",
+  "dependencies": {
+    "axios": "0.18.0",
+    "moxios": "git://github.com/stoplightio/moxios#v1.3.0",
+    "websocket": "1.0.23"
+  },
+  "devDependencies": {
+    "@types/jest": "22.1.3",
+    "@types/node": "9.4.6",
+    "jest": "22.4.2",
+    "rimraf": "2.6.2",
+    "ts-loader": "4.1.0",
+    "tslint": "5.9.1",
+    "typescript": "2.7.2",
+    "webpack": "4.1.1",
+    "webpack-cli": "2.0.12"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.ts$": "<rootDir>/preprocessor.js"
+    },
+    "testMatch": [
+      "**/*.spec.ts"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse/che-workspace-client"
+  },
+  "bugs": {
+    "url": "https://github.com/eclipse/che-workspace-client/issues"
+  }
+}
