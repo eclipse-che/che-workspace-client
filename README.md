@@ -7,7 +7,7 @@ This is a client for workspace REST API and workspace master JSON-RPC API intera
 ### REST API client
 
 ```typescript
-import WorkspaceClient from 'workspace-client';
+import WorkspaceClient from '@eclipse-che/workspace-client';
 
 const restApiClient = WorkspaceClient.getRestApi();
 // get list of workspaces
@@ -20,7 +20,7 @@ promise.then((workspaces) => {
 ### JSON-RPC API client
 
 ```typescript
-import WorkspaceClient from 'workspace-client';
+import WorkspaceClient from '@eclipse-che/workspace-client';
 
 const entryPoint = '/api/workspace';
 const masterApiClient = WorkspaceClient.getJsonRpcApi(entryPoint);
