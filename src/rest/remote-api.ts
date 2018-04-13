@@ -72,16 +72,16 @@ class RequestError implements IRequestError {
 }
 
 export interface IRemoteAPI {
-    getAll<T = IWorkspace>(): Promise<IRequestError | T[]>;
-    getAllByNamespace<T = IWorkspace>(namespace: string): Promise<IRequestError | T[]>;
-    getById<T = IWorkspace>(workspaceKey: string): Promise<IRequestError | T>;
-    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<IRequestError | any>;
-    update(workspaceId: string, workspace: IWorkspace): Promise<IRequestError | any>;
-    delete(workspaceId: string): Promise<IRequestError | any>;
-    start(workspaceId: string, environmentName: string): Promise<IRequestError | any>;
-    startTemporary(config: IWorkspaceConfig): Promise<IRequestError | any>;
-    stop(workspaceId: string): Promise<IRequestError | any>;
-    getSettings<T = IWorkspaceSettings>(): Promise<IRequestError | T>;
+    getAll<T = IWorkspace>(): Promise<T[]>;
+    getAllByNamespace<T = IWorkspace>(namespace: string): Promise<T[]>;
+    getById<T = IWorkspace>(workspaceKey: string): Promise<T>;
+    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
+    update(workspaceId: string, workspace: IWorkspace): Promise<any>;
+    delete(workspaceId: string): Promise<any>;
+    start(workspaceId: string, environmentName: string): Promise<any>;
+    startTemporary(config: IWorkspaceConfig): Promise<any>;
+    stop(workspaceId: string): Promise<any>;
+    getSettings<T = IWorkspaceSettings>(): Promise<T>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -97,16 +97,16 @@ export class RemoteAPI implements IRemoteAPI {
     /**
      * Returns list of all user's workspaces.
      *
-     * @returns {Promise<IRequestError | T[]>}
+     * @returns {Promise<T[]>}
      */
-    public getAll<T = IWorkspace>(): Promise<IRequestError | T[]> {
+    public getAll<T = IWorkspace>(): Promise<T[]> {
         const key = this.buildKey(METHOD.getAll);
         const promise = this.getRequestPromise(key);
         if (promise) {
             return promise;
         }
 
-        const newPromise = new Promise<IRequestError | T[]>((resolve, reject) => {
+        const newPromise = new Promise<T[]>((resolve, reject) => {
             this.remoteAPI.getAll<T>()
                 .then((response: AxiosResponse<T[]>) => {
                     resolve(response.data);
@@ -124,16 +124,16 @@ export class RemoteAPI implements IRemoteAPI {
      * Returns list of workspaces in the namespace.
      *
      * @param {string} namespace
-     * @returns {Promise<IRequestError | T[]>}
+     * @returns {Promise<T[]>}
      */
-    public getAllByNamespace<T = IWorkspace>(namespace: string): Promise<IRequestError | T[]> {
+    public getAllByNamespace<T = IWorkspace>(namespace: string): Promise<T[]> {
         const key = this.buildKey(METHOD.getAllByNamespace, namespace);
         const promise = this.getRequestPromise(key);
         if (promise) {
             return promise;
         }
 
-        const newPromise = new Promise<IRequestError | T[]>((resolve, reject) => {
+        const newPromise = new Promise<T[]>((resolve, reject) => {
             this.remoteAPI.getAllByNamespace<T>(namespace)
                 .then((response: AxiosResponse<T[]>) => {
                     resolve(response.data);
@@ -151,16 +151,16 @@ export class RemoteAPI implements IRemoteAPI {
      * Returns a workspace by ID or key.
      *
      * @param {string} workspaceKey workspace ID or `namespace/workspaceName`
-     * @returns {Promise<IRequestError | T>}
+     * @returns {Promise<T>}
      */
-    public getById<T = IWorkspace>(workspaceKey: string): Promise<IRequestError | T> {
+    public getById<T = IWorkspace>(workspaceKey: string): Promise<T> {
         const key = this.buildKey(METHOD.getAllByNamespace, workspaceKey);
         const promise = this.getRequestPromise(key);
         if (promise) {
             return promise;
         }
 
-        const newPromise = new Promise<IRequestError | T>((resolve, reject) => {
+        const newPromise = new Promise<T>((resolve, reject) => {
             this.remoteAPI.getById<T>(workspaceKey)
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
@@ -179,10 +179,10 @@ export class RemoteAPI implements IRemoteAPI {
      *
      * @param {IWorkspaceConfig} config a workspace config.
      * @param {IResourceCreateQueryParams} params
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.create(config, params)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -198,10 +198,10 @@ export class RemoteAPI implements IRemoteAPI {
      *
      * @param {string} workspaceId a workspace ID to update
      * @param {IWorkspace} workspace a new workspace data
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public update(workspaceId: string, workspace: IWorkspace): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public update(workspaceId: string, workspace: IWorkspace): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.update(workspaceId, workspace)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -216,10 +216,10 @@ export class RemoteAPI implements IRemoteAPI {
      * Deletes a workspace.
      *
      * @param {string} workspaceId a workspace ID to delete
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public delete(workspaceId: string): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public delete(workspaceId: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.delete(workspaceId)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -235,10 +235,10 @@ export class RemoteAPI implements IRemoteAPI {
      *
      * @param {string} workspaceId a workspace ID.
      * @param {string} environmentName an environment name.
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public start(workspaceId: string, environmentName: string): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public start(workspaceId: string, environmentName: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.start(workspaceId, environmentName)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -253,10 +253,10 @@ export class RemoteAPI implements IRemoteAPI {
      * Starts a temporary workspace.
      *
      * @param {IWorkspaceConfig} config a workspace config.
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public startTemporary(config: IWorkspaceConfig): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public startTemporary(config: IWorkspaceConfig): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.startTemporary(config)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -271,10 +271,10 @@ export class RemoteAPI implements IRemoteAPI {
      * Stops a workspace.
      *
      * @param {string} workspaceId a workspace ID.
-     * @returns {Promise<IRequestError | any>}
+     * @returns {Promise<any>}
      */
-    public stop(workspaceId: string): Promise<IRequestError | any> {
-        return new Promise<IRequestError | any>((resolve, reject) => {
+    public stop(workspaceId: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.remoteAPI.stop(workspaceId)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -288,16 +288,16 @@ export class RemoteAPI implements IRemoteAPI {
     /**
      * Returns settings.
      *
-     * @returns {Promise<IRequestError | T>}
+     * @returns {Promise<T>}
      */
-    public getSettings<T = IWorkspaceSettings>(): Promise<IRequestError | T> {
+    public getSettings<T = IWorkspaceSettings>(): Promise<T> {
         const key = this.buildKey(METHOD.getSettings);
         const promise = this.getRequestPromise(key);
         if (promise) {
             return promise;
         }
 
-        const newPromise = new Promise<IRequestError | T>((resolve, reject) => {
+        const newPromise = new Promise<T>((resolve, reject) => {
             this.remoteAPI.getSettings<T>()
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
