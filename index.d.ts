@@ -171,25 +171,25 @@ export interface IRestAPIConfig {
 }
 
 export interface IRemoteAPI {
-    getAll<T>(): Promise<IRequestError | T[]>;
+    getAll<T>(): Promise<T[]>;
 
-    getAllByNamespace<T>(namespace: string): Promise<IRequestError | T[]>;
+    getAllByNamespace<T>(namespace: string): Promise<T[]>;
 
-    getById<T>(workspaceKey: string): Promise<IRequestError | T>;
+    getById<T>(workspaceKey: string): Promise<T>;
 
-    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<IRequestError | any>;
+    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
 
-    update(workspaceId: string, workspace: IWorkspace): Promise<IRequestError | any>;
+    update(workspaceId: string, workspace: IWorkspace): Promise<any>;
 
-    delete(workspaceId: string): Promise<IRequestError | any>;
+    delete(workspaceId: string): Promise<any>;
 
-    start(workspaceId: string, environmentName: string): Promise<IRequestError | any>;
+    start(workspaceId: string, environmentName: string): Promise<any>;
 
-    startTemporary(config: IWorkspaceConfig): Promise<IRequestError | any>;
+    startTemporary(config: IWorkspaceConfig): Promise<any>;
 
-    stop(workspaceId: string): Promise<IRequestError | any>;
+    stop(workspaceId: string): Promise<any>;
 
-    getSettings<T>(): Promise<IRequestError | T>;
+    getSettings<T>(): Promise<T>;
 }
 
 export interface IRequestError extends Error {
