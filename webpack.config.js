@@ -23,6 +23,7 @@ module.exports = {
         filename: 'index.js',
         library: 'workspace-client',
         libraryTarget: 'umd',
+        globalObject: 'this',
         path: path.resolve(__dirname, 'dist')
     }
 };
