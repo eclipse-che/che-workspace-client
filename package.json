@@ -1,8 +1,9 @@
 {
   "name": "@eclipse-che/workspace-client",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
+  "browser": "dist/client.js",
   "types": "typings/index.d.ts",
   "scripts": {
     "build": "rimraf dist && webpack-cli --mode production --config webpack.config.js",

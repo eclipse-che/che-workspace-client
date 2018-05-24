@@ -33,7 +33,7 @@ export default class WorkspaceClient {
         }
         const lastChar = baseUrl.slice(-1);
         if (lastChar === '/') {
-            baseUrl = baseUrl.substr(-1);
+            baseUrl = baseUrl.substr(0, baseUrl.length - 1);
         }
 
         const headers = config.headers || {};
