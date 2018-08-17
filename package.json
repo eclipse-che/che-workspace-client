@@ -16,7 +16,7 @@
       "email": "okurinny@redhat.com"
     }
   ],
-  "license": "EPL-2",
+  "license": "EPL-2.0",
   "dependencies": {
     "axios": "0.18.0",
     "moxios": "git://github.com/stoplightio/moxios#v1.3.0",
