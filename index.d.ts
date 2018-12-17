@@ -190,6 +190,8 @@ export interface IRemoteAPI {
     stop(workspaceId: string): Promise<any>;
 
     getSettings<T>(): Promise<T>;
+
+    getFactory<T>(factoryId: string): Promise<T>;
 }
 
 export interface IRequestError extends Error {

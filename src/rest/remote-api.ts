@@ -9,7 +9,7 @@
  **********************************************************************/
 
 import {AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse} from 'axios';
-import {IWorkspace, IWorkspaceConfig, IWorkspaceSettings} from '../../typings/types';
+import {IWorkspace, IWorkspaceConfig, IWorkspaceSettings, IFactory} from '../../typings/types';
 import {IResourceCreateQueryParams, IResources} from './resources';
 
 export enum METHOD {
@@ -81,6 +81,7 @@ export interface IRemoteAPI {
     startTemporary(config: IWorkspaceConfig): Promise<any>;
     stop(workspaceId: string): Promise<any>;
     getSettings<T = IWorkspaceSettings>(): Promise<T>;
+    getFactory<T = IFactory>(factoryId: string): Promise<T>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -308,6 +309,24 @@ export class RemoteAPI implements IRemoteAPI {
         this.saveRequestPromise(key, newPromise);
 
         return newPromise;
+    }
+
+    /**
+     * Returns a factory by ID.
+     *
+     * @param {string} factoryId factory ID
+     * @returns {Promise<T>}
+     */
+    public getFactory<T = IFactory>(factoryId: string): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.getFactory<T>(factoryId)
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
     }
 
     /**

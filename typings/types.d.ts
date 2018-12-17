@@ -125,3 +125,14 @@ export interface IWarning {
 export interface IWorkspaceSettings {
     supportedRecipeTypes: string;
 }
+
+export interface IFactory {
+    id?: string;
+    config: IWorkspaceConfig;
+    status: string | EWorkspaceStatus;
+    namespace?: string;
+    temporary?: boolean;
+    attributes?: IWorkspaceAttributes;
+    runtime?: IRuntime;
+    links?: { [attrName: string]: string };
+}
