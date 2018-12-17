@@ -30,11 +30,13 @@ export interface IResources {
     startTemporary: (config: IWorkspaceConfig) => AxiosPromise<any>;
     stop: (workspaceId: string) => AxiosPromise<any>;
     getSettings: <T>() => AxiosPromise<T>;
+    getFactory: <T>(factoryId: string) => AxiosPromise<T>;
 }
 
 export class Resources implements IResources {
 
     private readonly workspaceUrl = '/workspace';
+    private readonly factoryUrl = '/factory';
 
     constructor(private readonly axios: AxiosInstance,
                 private readonly baseUrl: string,
@@ -134,6 +136,14 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: `${this.workspaceUrl}/settings`
+        });
+    }
+
+    public getFactory<T>(factoryId: string): AxiosPromise<T> {
+        return this.axios.request<T>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `${this.factoryUrl}/${factoryId}`
         });
     }
 
