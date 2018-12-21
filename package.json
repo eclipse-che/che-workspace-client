@@ -43,7 +43,8 @@
     },
     "testMatch": [
       "**/*.spec.ts"
-    ]
+    ],
+    "testURL": "file:/"
   },
   "repository": {
     "type": "git",
