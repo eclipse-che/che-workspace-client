@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import {AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse} from 'axios';
-import {IWorkspace, IWorkspaceConfig, IWorkspaceSettings, IFactory} from '../../typings/types';
-import {IResourceCreateQueryParams, IResources} from './resources';
+import { AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { IResourceCreateQueryParams, IResources, WorkspaceSettings } from './resources';
+import { che } from '@eclipse-che/api';
 
 export enum METHOD {
     getAll,
@@ -71,17 +71,17 @@ class RequestError implements IRequestError {
 }
 
 export interface IRemoteAPI {
-    getAll<T = IWorkspace>(): Promise<T[]>;
-    getAllByNamespace<T = IWorkspace>(namespace: string): Promise<T[]>;
-    getById<T = IWorkspace>(workspaceKey: string): Promise<T>;
-    create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
-    update(workspaceId: string, workspace: IWorkspace): Promise<any>;
+    getAll<T = che.workspace.Workspace>(): Promise<T[]>;
+    getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]>;
+    getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T>;
+    create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
+    update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
     delete(workspaceId: string): Promise<any>;
     start(workspaceId: string, environmentName: string): Promise<any>;
-    startTemporary(config: IWorkspaceConfig): Promise<any>;
+    startTemporary(config: che.workspace.WorkspaceConfig): Promise<any>;
     stop(workspaceId: string): Promise<any>;
-    getSettings<T = IWorkspaceSettings>(): Promise<T>;
-    getFactory<T = IFactory>(factoryId: string): Promise<T>;
+    getSettings<T = WorkspaceSettings>(): Promise<T>;
+    getFactory<T = che.factory.Factory>(factoryId: string): Promise<T>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -99,7 +99,7 @@ export class RemoteAPI implements IRemoteAPI {
      *
      * @returns {Promise<T[]>}
      */
-    public getAll<T = IWorkspace>(): Promise<T[]> {
+    public getAll<T = che.workspace.Workspace>(): Promise<T[]> {
         const key = this.buildKey(METHOD.getAll);
         const promise = this.getRequestPromise(key);
         if (promise) {
@@ -126,7 +126,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {string} namespace
      * @returns {Promise<T[]>}
      */
-    public getAllByNamespace<T = IWorkspace>(namespace: string): Promise<T[]> {
+    public getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]> {
         const key = this.buildKey(METHOD.getAllByNamespace, namespace);
         const promise = this.getRequestPromise(key);
         if (promise) {
@@ -153,7 +153,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {string} workspaceKey workspace ID or `namespace/workspaceName`
      * @returns {Promise<T>}
      */
-    public getById<T = IWorkspace>(workspaceKey: string): Promise<T> {
+    public getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T> {
         const key = this.buildKey(METHOD.getAllByNamespace, workspaceKey);
         const promise = this.getRequestPromise(key);
         if (promise) {
@@ -181,7 +181,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {IResourceCreateQueryParams} params
      * @returns {Promise<any>}
      */
-    public create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): Promise<any> {
+    public create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.create(config, params)
                 .then((response: AxiosResponse<any>) => {
@@ -200,7 +200,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {IWorkspace} workspace a new workspace data
      * @returns {Promise<any>}
      */
-    public update(workspaceId: string, workspace: IWorkspace): Promise<any> {
+    public update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.update(workspaceId, workspace)
                 .then((response: AxiosResponse<any>) => {
@@ -255,7 +255,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {IWorkspaceConfig} config a workspace config.
      * @returns {Promise<any>}
      */
-    public startTemporary(config: IWorkspaceConfig): Promise<any> {
+    public startTemporary(config: che.workspace.WorkspaceConfig): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.startTemporary(config)
                 .then((response: AxiosResponse<any>) => {
@@ -290,7 +290,7 @@ export class RemoteAPI implements IRemoteAPI {
      *
      * @returns {Promise<T>}
      */
-    public getSettings<T = IWorkspaceSettings>(): Promise<T> {
+    public getSettings<T = WorkspaceSettings>(): Promise<T> {
         const key = this.buildKey(METHOD.getSettings);
         const promise = this.getRequestPromise(key);
         if (promise) {
@@ -317,7 +317,7 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {string} factoryId factory ID
      * @returns {Promise<T>}
      */
-    public getFactory<T = IFactory>(factoryId: string): Promise<T> {
+    public getFactory<T = che.factory.Factory>(factoryId: string): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.remoteAPI.getFactory<T>(factoryId)
                 .then((response: AxiosResponse<T>) => {

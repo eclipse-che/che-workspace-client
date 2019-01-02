@@ -8,9 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import { AxiosInstance, AxiosPromise} from 'axios';
-import { IWorkspace, IWorkspaceConfig } from '../../typings/types';
+import { AxiosInstance, AxiosPromise } from 'axios';
+import { che } from '@eclipse-che/api';
 
+export interface WorkspaceSettings {
+    supportedRecipeTypes: string;
+    [key: string]: string;
+}
 export interface IResourceCreateQueryParams extends IResourceQueryParams {
     attribute: string;
     namespace?: string;
@@ -23,11 +27,11 @@ export interface IResources {
     getAll: <T>() => AxiosPromise<T[]>;
     getAllByNamespace: <T>(namespace: string) => AxiosPromise<T[]>;
     getById: <T>(workspaceKey: string) => AxiosPromise<T>;
-    create: (config: IWorkspaceConfig, params: IResourceCreateQueryParams) => AxiosPromise<any>;
-    update: (workspaceId: string, workspace: IWorkspace) => AxiosPromise<any>;
+    create: (config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams) => AxiosPromise<any>;
+    update: (workspaceId: string, workspace: che.workspace.Workspace) => AxiosPromise<any>;
     delete: (workspaceId: string) => AxiosPromise<any>;
     start: (workspaceId: string, environmentName: string) => AxiosPromise<any>;
-    startTemporary: (config: IWorkspaceConfig) => AxiosPromise<any>;
+    startTemporary: (config: che.workspace.WorkspaceConfig) => AxiosPromise<any>;
     stop: (workspaceId: string) => AxiosPromise<any>;
     getSettings: <T>() => AxiosPromise<T>;
     getFactory: <T>(factoryId: string) => AxiosPromise<T>;
@@ -39,8 +43,8 @@ export class Resources implements IResources {
     private readonly factoryUrl = '/factory';
 
     constructor(private readonly axios: AxiosInstance,
-                private readonly baseUrl: string,
-                private readonly headers: {[headerTitle: string]: string} = {}) {
+        private readonly baseUrl: string,
+        private readonly headers: { [headerTitle: string]: string } = {}) {
         for (const title in headers) {
             if (headers.hasOwnProperty(title)) {
                 this.axios.defaults.headers.common[title] = headers[title];
@@ -72,7 +76,7 @@ export class Resources implements IResources {
         });
     }
 
-    public create(config: IWorkspaceConfig, params: IResourceCreateQueryParams): AxiosPromise<any> {
+    public create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): AxiosPromise<any> {
         let encodedParams = `attribute=${params.attribute}`; // it contains colon ":" which shouldn't be encoded
         delete params.attribute;
         if (params.namespace) {
@@ -88,7 +92,7 @@ export class Resources implements IResources {
         });
     }
 
-    public update(workspaceId: string, workspace: IWorkspace): AxiosPromise<any> {
+    public update(workspaceId: string, workspace: che.workspace.Workspace): AxiosPromise<any> {
         return this.axios.request<any>({
             method: 'PUT',
             data: workspace,
@@ -114,7 +118,7 @@ export class Resources implements IResources {
         });
     }
 
-    public startTemporary(config: IWorkspaceConfig): AxiosPromise<any> {
+    public startTemporary(config: che.workspace.WorkspaceConfig): AxiosPromise<any> {
         return this.axios.request<any>({
             method: 'POST',
             data: config,
