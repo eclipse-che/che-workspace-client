@@ -74,6 +74,7 @@ export interface IRuntime {
     machines: { [attrName: string]: IMachine };
     owner: string;
     warnings?: IWarning;
+    commands?: ICommand[];
 }
 
 export interface ILink {
