@@ -18,6 +18,7 @@
   ],
   "license": "EPL-2.0",
   "dependencies": {
+    "@eclipse-che/api": "^6.16.1",
     "axios": "0.18.0",
     "moxios": "git://github.com/stoplightio/moxios#v1.3.0",
     "websocket": "1.0.23"
