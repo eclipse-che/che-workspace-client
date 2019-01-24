@@ -35,6 +35,11 @@ export interface IResources {
     stop: (workspaceId: string) => AxiosPromise<any>;
     getSettings: <T>() => AxiosPromise<T>;
     getFactory: <T>(factoryId: string) => AxiosPromise<T>;
+    generateSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
+    createSshKey: (sshKeyPair: che.ssh.SshPair) => AxiosPromise<void>;
+    getSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
+    getAllSshKey: <T>(service: string) => AxiosPromise<T[]>;
+    deleteSshKey(service: string, name: string): AxiosPromise<void>;
 }
 
 export class Resources implements IResources {
@@ -148,6 +153,47 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: `${this.factoryUrl}/${factoryId}`
+        });
+    }
+
+    public generateSshKey<T>(service: string, name: string): AxiosPromise<T> {
+        return this.axios.request<T>({
+            method: 'POST',
+            baseURL: this.baseUrl,
+            url: `/ssh/generate/${service}/${name}`
+        });
+    }
+
+    public createSshKey(sshKeyPair: any): AxiosPromise<void> {
+        return this.axios.request<any>({
+            method: 'POST',
+            data: sshKeyPair,
+            baseURL: this.baseUrl,
+            url: `/ssh/`
+        });
+    }
+
+    public getSshKey<T>(service: string, name: string): AxiosPromise<T> {
+        return this.axios.request<any>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/ssh/${service}/find?name=${name}`
+        });
+    }
+
+    public getAllSshKey<T>(service: string): AxiosPromise<T[]> {
+        return this.axios.request<any>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/ssh/${service}`
+        });
+    }
+
+    public deleteSshKey(service: string, name: string): AxiosPromise<void> {
+        return this.axios.request<any>({
+            method: 'DELETE',
+            baseURL: this.baseUrl,
+            url: `/ssh/${service}?name=${name}`
         });
     }
 
