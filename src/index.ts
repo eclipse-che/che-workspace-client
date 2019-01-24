@@ -16,7 +16,12 @@ import {Backend, IBackend} from './rest/backend';
 import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
 import {WebSocketClient} from './json-rpc/web-socket-client';
 
-interface IRestAPIConfig {
+
+export * from './rest/backend';
+export * from './rest/remote-api';
+export * from './json-rpc/workspace-master-api';
+
+export  interface IRestAPIConfig {
     baseUrl?: string;
     headers?: any;
 }
