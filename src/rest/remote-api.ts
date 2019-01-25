@@ -82,6 +82,11 @@ export interface IRemoteAPI {
     stop(workspaceId: string): Promise<any>;
     getSettings<T = WorkspaceSettings>(): Promise<T>;
     getFactory<T = che.factory.Factory>(factoryId: string): Promise<T>;
+    generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
+    createSshKey(sshKeyPair: che.ssh.SshPair): Promise<void>;
+    getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
+    getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]>;
+    deleteSshKey(service: string, name: string): Promise<void>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -321,6 +326,64 @@ export class RemoteAPI implements IRemoteAPI {
         return new Promise<T>((resolve, reject) => {
             this.remoteAPI.getFactory<T>(factoryId)
                 .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.generateSshKey<T>(service, name)
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+    public createSshKey(sshKeyPair: any): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.createSshKey(sshKeyPair)
+                .then((response: AxiosResponse<void>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+    public getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.getSshKey<T>(service, name)
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]> {
+        return new Promise<T[]>((resolve, reject) => {
+            this.remoteAPI.getAllSshKey<T>(service)
+                .then((response: AxiosResponse<T[]>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public deleteSshKey(service: string, name: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.deleteSshKey(service, name)
+                .then((response: AxiosResponse) => {
                     resolve(response.data);
                 })
                 .catch((error: AxiosError) => {
