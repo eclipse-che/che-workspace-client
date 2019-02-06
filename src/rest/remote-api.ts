@@ -9,7 +9,7 @@
  **********************************************************************/
 
 import { AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { IResourceCreateQueryParams, IResources, WorkspaceSettings } from './resources';
+import { IResourceCreateQueryParams, IResources, WorkspaceSettings, Preferences } from './resources';
 import { che } from '@eclipse-che/api';
 
 export enum METHOD {
@@ -87,10 +87,15 @@ export interface IRemoteAPI {
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]>;
     deleteSshKey(service: string, name: string): Promise<void>;
+    getUserPreferences(): Promise<Preferences>;
+    getUserPreferences(filter: string | undefined): Promise<Preferences>;
+    updateUserPreferences(update: Preferences): Promise<Preferences>;
+    replaceUserPreferences(preferences: Preferences): Promise<Preferences>;
+    deleteUserPreferences(): Promise<void>;
+    deleteUserPreferences(list: string[] | undefined): Promise<void>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
-
     private promises: Map<string, AxiosPromise<any>> = new Map();
 
     private remoteAPI: IResources;
@@ -385,6 +390,54 @@ export class RemoteAPI implements IRemoteAPI {
             this.remoteAPI.deleteSshKey(service, name)
                 .then((response: AxiosResponse) => {
                     resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public getUserPreferences(filter: string | undefined = undefined): Promise<Preferences> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.getUserPreferences(filter)
+                .then((response: AxiosResponse<Preferences>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public updateUserPreferences(update: Preferences): Promise<Preferences> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.updateUserPreferences(update)
+                .then((response: AxiosResponse<Preferences>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public replaceUserPreferences(preferences: Preferences): Promise<Preferences> {
+         return new Promise((resolve, reject) => {
+            this.remoteAPI.replaceUserPreferences(preferences)
+                .then((response: AxiosResponse<Preferences>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public deleteUserPreferences(list: string[] | undefined = undefined): Promise<void> {
+         return new Promise((resolve, reject) => {
+            this.remoteAPI.deleteUserPreferences(list)
+                .then((response: AxiosResponse<void>) => {
+                    resolve();
                 })
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));

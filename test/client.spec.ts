@@ -46,4 +46,21 @@ describe('RestAPI >', () => {
         });
     });
 
+    it('should receive all user preferences', (done) => {
+        backend.stubRequest('GET', '/preferences', {
+            status: 200,
+            responseText: '{"key1":"value", "key2": 5}'
+        });
+
+        const spySucceed = jasmine.createSpy('succeed');
+        const spyFailed = jasmine.createSpy('failed');
+        restApi.getUserPreferences().then(spySucceed, spyFailed);
+
+        backend.wait(() => {
+            expect(spySucceed.calls.count()).toEqual(1);
+            expect(spyFailed.calls.count()).toEqual(0);
+            done();
+        });
+    });
+
 });

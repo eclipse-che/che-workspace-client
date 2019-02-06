@@ -22,6 +22,9 @@ export interface IResourceCreateQueryParams extends IResourceQueryParams {
 export interface IResourceQueryParams {
     [propName: string]: string | undefined;
 }
+export interface Preferences {
+    [key: string]: string;
+}
 
 export interface IResources {
     getAll: <T>() => AxiosPromise<T[]>;
@@ -40,6 +43,10 @@ export interface IResources {
     getSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
     getAllSshKey: <T>(service: string) => AxiosPromise<T[]>;
     deleteSshKey(service: string, name: string): AxiosPromise<void>;
+    getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
+    updateUserPreferences(update: Preferences): AxiosPromise<Preferences>;
+    replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
+    deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
 }
 
 export class Resources implements IResources {
@@ -194,6 +201,48 @@ export class Resources implements IResources {
             method: 'DELETE',
             baseURL: this.baseUrl,
             url: `/ssh/${service}?name=${name}`
+        });
+    }
+
+    public getUserPreferences(filter: string | undefined = undefined): AxiosPromise<Preferences> {
+        return this.axios.request<Preferences>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: filter ? `/preferences?filter=${filter}` : '/preferences'
+        });
+    }
+
+    public updateUserPreferences(update: Preferences): AxiosPromise<Preferences> {
+        return this.axios.request<Preferences>({
+            method: 'PUT',
+            baseURL: this.baseUrl,
+            url: `/preferences`,
+            data: update
+        });
+    }
+
+    public replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences> {
+        return this.axios.request<Preferences>({
+            method: 'POST',
+            baseURL: this.baseUrl,
+            url: `/preferences`,
+            data: preferences
+        });
+    }
+
+    public deleteUserPreferences(list: string[] | undefined = undefined): AxiosPromise<void> {
+        if (list) {
+            return this.axios.request<void>({
+                method: 'DELETE',
+                baseURL: this.baseUrl,
+                url: `/preferences`,
+                data: list
+            });
+        }
+        return this.axios.request<void>({
+            method: 'DELETE',
+            baseURL: this.baseUrl,
+            url: `/preferences`
         });
     }
 
