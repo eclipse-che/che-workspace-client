@@ -167,7 +167,8 @@ export class Resources implements IResources {
         return this.axios.request<T>({
             method: 'POST',
             baseURL: this.baseUrl,
-            url: `/ssh/generate/${service}/${name}`
+            data: {service: service, name: name},
+            url: `/ssh/generate`
         });
     }
 
