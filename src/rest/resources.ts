@@ -31,6 +31,7 @@ export interface IResources {
     getAllByNamespace: <T>(namespace: string) => AxiosPromise<T[]>;
     getById: <T>(workspaceKey: string) => AxiosPromise<T>;
     create: (config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams) => AxiosPromise<any>;
+    createFromDevfile: <T>(devfileContent: string) => AxiosPromise<T>;
     update: (workspaceId: string, workspace: che.workspace.Workspace) => AxiosPromise<any>;
     delete: (workspaceId: string) => AxiosPromise<any>;
     start: (workspaceId: string, environmentName: string) => AxiosPromise<any>;
@@ -53,6 +54,7 @@ export class Resources implements IResources {
 
     private readonly workspaceUrl = '/workspace';
     private readonly factoryUrl = '/factory';
+    private readonly devfileUrl = '/devfile';
 
     constructor(private readonly axios: AxiosInstance,
         private readonly baseUrl: string,
@@ -101,6 +103,16 @@ export class Resources implements IResources {
             data: config,
             baseURL: this.baseUrl,
             url: url
+        });
+    }
+
+    public createFromDevfile<T>(devfileContent: string): AxiosPromise<T> {
+        return this.axios.request<any>({
+            method: 'POST',
+            data: devfileContent,
+            headers: {'Content-Type': 'text/yaml'},
+            baseURL: this.baseUrl,
+            url: this.workspaceUrl
         });
     }
 

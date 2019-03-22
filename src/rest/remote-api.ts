@@ -75,6 +75,7 @@ export interface IRemoteAPI {
     getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]>;
     getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T>;
     create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
+    createFromDevfile<T = che.workspace.Workspace>(devfileContent: string): Promise<T>;
     update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
     delete(workspaceId: string): Promise<any>;
     start(workspaceId: string, environmentName: string): Promise<any>;
@@ -194,6 +195,24 @@ export class RemoteAPI implements IRemoteAPI {
     public create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.create(config, params)
+                .then((response: AxiosResponse<any>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    /**
+     * Creates a workspace from devfile.
+     *
+     * @param {string} devfileContent devfile
+     * @returns {Promise<any>}
+     */
+    public createFromDevfile(devfileContent: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.remoteAPI.createFromDevfile(devfileContent)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
                 })
