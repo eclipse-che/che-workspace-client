@@ -112,7 +112,7 @@ export class Resources implements IResources {
             data: devfileContent,
             headers: {'Content-Type': 'text/yaml'},
             baseURL: this.baseUrl,
-            url: this.workspaceUrl
+            url: this.devfileUrl
         });
     }
 
