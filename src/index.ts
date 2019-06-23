@@ -58,7 +58,7 @@ export default class WorkspaceClient {
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
         console.log('Create axios instance!!!');
-        if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
+        if (config.ssCrtPath && this.isItNode() && fs.existsSync(config.ssCrtPath)) {
             console.log('Detected self signed certificate!!!');
             const agent = new https.Agent({
                 ca: fs.readFileSync(config.ssCrtPath)
@@ -67,5 +67,10 @@ export default class WorkspaceClient {
         }
 
         return axios;
+    }
+
+    private static isItNode() {
+        console.log('>>>>>check node');
+        return (typeof process !== 'undefined') && (typeof process.versions.node !== 'undefined')
     }
 }
