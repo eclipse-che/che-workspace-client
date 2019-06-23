@@ -15,7 +15,8 @@ import {Resources} from './rest/resources';
 import {Backend, IBackend} from './rest/backend';
 import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
 import {WebSocketClient} from './json-rpc/web-socket-client';
-
+import * as fs from 'fs';
+import * as https from 'https';
 
 export * from './rest/backend';
 export * from './rest/remote-api';
@@ -24,11 +25,11 @@ export * from './json-rpc/workspace-master-api';
 export  interface IRestAPIConfig {
     baseUrl?: string;
     headers?: any;
+    // path to self signed certificate
+    ssCrtPath?: string;
 }
 
 export default class WorkspaceClient {
-
-    private static axiosInstance: AxiosInstance = axios;
 
     public static getRestApi(config: IRestAPIConfig = {}): IRemoteAPI {
         let baseUrl = config.baseUrl;
@@ -42,12 +43,12 @@ export default class WorkspaceClient {
 
         const headers = config.headers || {};
 
-        const resources = new Resources(this.axiosInstance, baseUrl, headers);
+        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers);
         return new RemoteAPI(resources);
     }
 
     public static getRestBackend(): IBackend {
-        return new Backend(this.axiosInstance, moxios);
+        return new Backend(axios, moxios);
     }
 
     public static getJsonRpcApi(entryPoint: string): IWorkspaceMasterApi {
@@ -55,4 +56,16 @@ export default class WorkspaceClient {
         return new WorkspaceMasterApi(transport, entryPoint);
     }
 
+    private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
+        console.log('Create axios instance!!!');
+        if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
+            console.log('Detected self signed certificate!!!');
+            const agent = new https.Agent({
+                ca: fs.readFileSync(config.ssCrtPath)
+            });
+            return axios.create({httpsAgent: agent});
+        }
+
+        return axios;
+    }
 }
