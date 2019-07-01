@@ -49,6 +49,9 @@ var client = {
         extensions: ['.ts', '.js']
     },
     target: 'web',
+    node: {
+        fs: 'empty',
+    },
     output: {
         filename: 'client.js',
         library: 'workspace-client',
