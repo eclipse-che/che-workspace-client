@@ -8,7 +8,8 @@
   "scripts": {
     "build": "rimraf dist && webpack-cli --mode production --config webpack.config.js",
     "test": "jest",
-    "prepare": "npm run test && npm run build"
+    "test:watch": "jest --watchAll",
+    "prepare": "yarn run test && yarn run build"
   },
   "contributors": [
     {
@@ -18,9 +19,8 @@
   ],
   "license": "EPL-2.0",
   "dependencies": {
-    "@eclipse-che/api": "^6.16.1",
+    "@eclipse-che/api": "^7.0.0-beta-4.0",
     "axios": "0.18.0",
-    "moxios": "git://github.com/stoplightio/moxios#v1.3.0",
     "websocket": "1.0.23"
   },
   "devDependencies": {

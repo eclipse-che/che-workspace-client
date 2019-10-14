@@ -10,57 +10,53 @@
 'use strict';
 
 import {IRemoteAPI} from '../src/rest/remote-api';
-import {IBackend} from '../src/rest/backend';
 import WorkspaceClient from '../src';
+import * as mockAxios from 'axios';
+
+const axios = (mockAxios as any);
 
 describe('RestAPI >', () => {
 
     let restApi: IRemoteAPI;
-    let backend: IBackend;
 
     beforeEach(() => {
         restApi = WorkspaceClient.getRestApi();
-        backend = WorkspaceClient.getRestBackend();
-
-        backend.install();
+        jest.resetAllMocks()
     });
 
     afterEach(() => {
-        backend.uninstall();
     });
 
-    it('dummy test', (done) => {
-        backend.stubRequest('GET', '/workspace', {
+   it('dummy test', async () => {
+        axios.request.mockImplementationOnce(() =>
+        Promise.resolve({
             status: 200,
-            responseText: 'Hello'
-        });
+            data: 'Hello'
+        })
+      );
+        await restApi.getAll();
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/workspace'});
 
-        const spySucceed = jasmine.createSpy('succeed');
-        const spyFailed = jasmine.createSpy('failed');
-        restApi.getAll().then(spySucceed, spyFailed);
-
-        backend.wait(() => {
-            expect(spySucceed.calls.count()).toEqual(1);
-            expect(spyFailed.calls.count()).toEqual(0);
-            done();
-        });
     });
 
-    it('should receive all user preferences', (done) => {
-        backend.stubRequest('GET', '/preferences', {
+    it('should receive all user preferences', async () => {
+        axios.request.mockImplementationOnce(() =>
+        Promise.resolve({
             status: 200,
-            responseText: '{"key1":"value", "key2": 5}'
-        });
+            data: {'key1':'value', 'key2': 5}
+        })
+      );
+        const preferences = await restApi.getUserPreferences();
 
-        const spySucceed = jasmine.createSpy('succeed');
-        const spyFailed = jasmine.createSpy('failed');
-        restApi.getUserPreferences().then(spySucceed, spyFailed);
-
-        backend.wait(() => {
-            expect(spySucceed.calls.count()).toEqual(1);
-            expect(spyFailed.calls.count()).toEqual(0);
-            done();
-        });
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/preferences'});
+        expect(preferences).toBeDefined();
+        expect(preferences).toHaveProperty('key1');
+        expect(preferences).toHaveProperty('key2');
+        expect(preferences).not.toHaveProperty('key3');
+        expect(preferences['key1']).toBe('value');
+        expect(preferences['key2']).toBe(5);
     });
 
 });
