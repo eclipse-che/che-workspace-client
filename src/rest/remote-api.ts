@@ -9,7 +9,7 @@
  **********************************************************************/
 
 import { AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { IResourceCreateQueryParams, IResources, WorkspaceSettings, Preferences } from './resources';
+import { IResourceCreateQueryParams, IResources, WorkspaceSettings, Preferences, User } from './resources';
 import { che } from '@eclipse-che/api';
 
 export enum METHOD {
@@ -87,12 +87,14 @@ export interface IRemoteAPI {
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]>;
     deleteSshKey(service: string, name: string): Promise<void>;
+    getCurrentUser(): Promise<User>;
     getUserPreferences(): Promise<Preferences>;
     getUserPreferences(filter: string | undefined): Promise<Preferences>;
     updateUserPreferences(update: Preferences): Promise<Preferences>;
     replaceUserPreferences(preferences: Preferences): Promise<Preferences>;
     deleteUserPreferences(): Promise<void>;
     deleteUserPreferences(list: string[] | undefined): Promise<void>;
+    getOAuthToken(oAuthProvider: string): Promise<string>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -397,6 +399,18 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
+    getCurrentUser(): Promise<User> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.getCurrentUser()
+                .then((response: AxiosResponse<User>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
     public getUserPreferences(filter: string | undefined = undefined): Promise<Preferences> {
         return new Promise((resolve, reject) => {
             this.remoteAPI.getUserPreferences(filter)
@@ -438,6 +452,18 @@ export class RemoteAPI implements IRemoteAPI {
             this.remoteAPI.deleteUserPreferences(list)
                 .then((response: AxiosResponse<void>) => {
                     resolve();
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    getOAuthToken(oAuthProvider: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.getOAuthToken(oAuthProvider)
+                .then((response: AxiosResponse<{ token: string }>) => {
+                    resolve(response.data.token);
                 })
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
