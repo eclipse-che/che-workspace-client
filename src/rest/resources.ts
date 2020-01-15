@@ -26,6 +26,12 @@ export interface Preferences {
     [key: string]: string;
 }
 
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
 export interface IResources {
     getAll: <T>() => AxiosPromise<T[]>;
     getAllByNamespace: <T>(namespace: string) => AxiosPromise<T[]>;
@@ -43,10 +49,12 @@ export interface IResources {
     getSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
     getAllSshKey: <T>(service: string) => AxiosPromise<T[]>;
     deleteSshKey(service: string, name: string): AxiosPromise<void>;
+    getCurrentUser(): AxiosPromise<User>;
     getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
     updateUserPreferences(update: Preferences): AxiosPromise<Preferences>;
     replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
     deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
+    getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
 }
 
 export class Resources implements IResources {
@@ -197,6 +205,14 @@ export class Resources implements IResources {
         });
     }
 
+    public getCurrentUser(): AxiosPromise<User> {
+        return this.axios.request<User>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/user`
+        });
+    }
+
     public deleteSshKey(service: string, name: string): AxiosPromise<void> {
         return this.axios.request<any>({
             method: 'DELETE',
@@ -244,6 +260,14 @@ export class Resources implements IResources {
             method: 'DELETE',
             baseURL: this.baseUrl,
             url: `/preferences`
+        });
+    }
+
+    public getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }> {
+        return this.axios.request<{ token: string }>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/oauth/token?oauth_provider=${oAuthProvider}`
         });
     }
 
