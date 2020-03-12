@@ -48,6 +48,7 @@ export interface IResources {
     createSshKey: (sshKeyPair: che.ssh.SshPair) => AxiosPromise<void>;
     getSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
     getAllSshKey: <T>(service: string) => AxiosPromise<T[]>;
+    getOAuthProviders: () => AxiosPromise<any[]>;
     deleteSshKey(service: string, name: string): AxiosPromise<void>;
     getCurrentUser(): AxiosPromise<User>;
     getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
@@ -268,6 +269,14 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: `/oauth/token?oauth_provider=${oAuthProvider}`
+        });
+    }
+
+    public getOAuthProviders(): AxiosPromise<any[]> {
+        return this.axios.request<any[]>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: '/oauth'
         });
     }
 
