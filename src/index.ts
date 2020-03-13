@@ -13,6 +13,7 @@ import {IRemoteAPI, RemoteAPI} from './rest/remote-api';
 import {Resources} from './rest/resources';
 import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
 import {WebSocketClient} from './json-rpc/web-socket-client';
+import {HttpsProxyAgent} from 'https-proxy-agent';
 import * as fs from 'fs';
 import * as https from 'https';
 
@@ -51,6 +52,11 @@ export default class WorkspaceClient {
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
         if (config.ssCrtPath && this.isItNode() && fs.existsSync(config.ssCrtPath)) {
+            let proxy = process.env.http_proxy;
+            if (proxy && proxy !== '' && config.baseUrl && config.baseUrl.startsWith('https://')) {
+                const agent = new HttpsProxyAgent(proxy);
+                return axios.create({httpsAgent: agent});
+            }
             const agent = new https.Agent({
                 ca: fs.readFileSync(config.ssCrtPath)
             });
@@ -61,6 +67,6 @@ export default class WorkspaceClient {
     }
 
     private static isItNode() {
-        return (typeof process !== 'undefined') && (typeof process.versions.node !== 'undefined')
+        return (typeof process !== 'undefined') && (typeof process.versions.node !== 'undefined');
     }
 }
