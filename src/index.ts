@@ -9,13 +9,14 @@
  **********************************************************************/
 
 import axios, {AxiosInstance, AxiosStatic} from 'axios';
+import { httpsOverHttp } from 'tunnel';
 import {IRemoteAPI, RemoteAPI} from './rest/remote-api';
 import {Resources} from './rest/resources';
 import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
 import {WebSocketClient} from './json-rpc/web-socket-client';
-import {HttpsProxyAgent} from 'https-proxy-agent';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as url from 'url';
 
 export * from './rest/remote-api';
 export * from './json-rpc/workspace-master-api';
@@ -52,14 +53,24 @@ export default class WorkspaceClient {
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
         if (config.ssCrtPath && this.isItNode() && fs.existsSync(config.ssCrtPath)) {
-            let proxy = process.env.http_proxy;
+            const proxy = process.env.http_proxy;
+            let agent;
             if (proxy && proxy !== '' && config.baseUrl && config.baseUrl.startsWith('https://')) {
-                const agent = new HttpsProxyAgent(proxy);
-                return axios.create({httpsAgent: agent});
+                const pacedUrl = url.parse(proxy);
+                if (pacedUrl.host && pacedUrl.port) {
+                    agent = httpsOverHttp({
+                        proxy: {
+                            host: pacedUrl.host,
+                            port: Number(pacedUrl.port)
+                        },
+                        ca: [fs.readFileSync(config.ssCrtPath)]
+                    });
+                }
+            } else {
+                agent = new https.Agent({
+                    ca: fs.readFileSync(config.ssCrtPath)
+                });
             }
-            const agent = new https.Agent({
-                ca: fs.readFileSync(config.ssCrtPath)
-            });
             return axios.create({httpsAgent: agent});
         }
 

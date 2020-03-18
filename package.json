@@ -1,6 +1,6 @@
 {
   "name": "@ivinokur/workspace-client",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "This is a client for workspace REST API and workspace master JSON-RPC API interactions.",
   "main": "dist/server.js",
   "browser": "dist/client.js",
@@ -18,12 +18,14 @@
   "dependencies": {
     "@eclipse-che/api": "^7.0.0-beta-4.0",
     "axios": "0.19.0",
+    "tunnel": "0.0.6",
     "websocket": "1.0.23"
   },
   "devDependencies": {
     "https-proxy-agent": "latest",
     "@types/jest": "22.1.3",
     "@types/node": "9.4.6",
+    "@types/tunnel": "0.0.1",
     "jest": "22.4.2",
     "rimraf": "2.6.2",
     "ts-loader": "4.1.0",
