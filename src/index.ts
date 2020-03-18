@@ -76,7 +76,7 @@ export default class WorkspaceClient {
               };
     
             if (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') {
-            mainProxyOptions.proxyAuth = parsedProxyUrl.auth;
+                mainProxyOptions.proxyAuth = parsedProxyUrl.auth;
             }
             
             const noProxyEnv = process.env.no_proxy || process.env.NO_PROXY;
