@@ -16,7 +16,6 @@ import {WebSocketClient} from './json-rpc/web-socket-client';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as url from 'url';
-import * as http from 'http';
 import * as tunnel from 'tunnel';
 
 export * from './rest/remote-api';
@@ -57,42 +56,42 @@ export default class WorkspaceClient {
             return axios;
         }
 
-        let certificateAuthority : Buffer | undefined = undefined
+        let certificateAuthority : Buffer | undefined;
         if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
             certificateAuthority = fs.readFileSync(config.ssCrtPath);
-        }            
-        
+        }
+
         const proxyUrl = process.env.http_proxy;
         if (proxyUrl && proxyUrl !== '' && config.baseUrl) {
-            let mainProxyOptions: tunnel.ProxyOptions
+            let mainProxyOptions: tunnel.ProxyOptions;
             var parsedProxyUrl = url.parse(proxyUrl);
-            let port = 3128
+            let port = 3128;
             if (parsedProxyUrl.port && parsedProxyUrl.port !== '') {
-                port = Number(parsedProxyUrl.port)
+                port = Number(parsedProxyUrl.port);
             }
             mainProxyOptions = {
                 host: parsedProxyUrl.hostname!,
                 port: port
-              };
-    
+            };
+
             if (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') {
                 mainProxyOptions.proxyAuth = parsedProxyUrl.auth;
             }
-            
+
             const noProxyEnv = process.env.no_proxy || process.env.NO_PROXY;
-            let noProxy: string[] = []
+            let noProxy: string[] = [];
             if (noProxyEnv) {
-                noProxy = noProxyEnv.split(',').map(function trim(s) {
+                noProxy = noProxyEnv.split(',').map(function trim(s: string) {
                     return s.trim();
                 });
             }
-            
+
             var parsedBaseUrl = url.parse(config.baseUrl);
 
             let shouldProxy = false;
             const hostname = parsedBaseUrl.hostname;
             if (hostname) {
-                shouldProxy = !noProxy.some(function (rule) {
+                shouldProxy = !noProxy.some(function (rule: string) {
                     if (!rule) {
                         return false;
                     }
@@ -101,32 +100,32 @@ export default class WorkspaceClient {
                     }
                     if (rule[0] === '.' &&
                         hostname.substr(hostname.length - rule.length) === rule) {
-                    return true;
+                        return true;
                     }
-        
+
                     return hostname === rule;
                 });
             }
-            
+
             if (shouldProxy) {
                 const httpOverHttpAgent = tunnel.httpOverHttp({
                     proxy: mainProxyOptions
                 });
-    
+
                 const httpsOverHttpOptions: tunnel.HttpsOverHttpOptions = {
                     proxy: mainProxyOptions
-                }
+                };
                 if (certificateAuthority) {
                     httpsOverHttpOptions.ca = [ certificateAuthority ];
                 }
                 const httpsOverHttpAgent = tunnel.httpsOverHttp(httpsOverHttpOptions);
-                
+
                 const httpsProxyOptions: tunnel.HttpsProxyOptions = {
                     host: mainProxyOptions.host,
                     port: mainProxyOptions.port,
                     proxyAuth: mainProxyOptions.proxyAuth,
                     servername: parsedBaseUrl.hostname
-                }
+                };
                 if (certificateAuthority) {
                     httpsProxyOptions.ca = [ certificateAuthority ];
                 }
@@ -134,20 +133,20 @@ export default class WorkspaceClient {
                 const httpOverHttpsAgent = tunnel.httpOverHttps({
                     proxy: httpsProxyOptions
                 });
-                
+
                 const httpsOverHttpsOptions: tunnel.HttpsOverHttpsOptions = {
                     proxy: httpsProxyOptions
-                }
+                };
                 if (certificateAuthority) {
                     httpsOverHttpsOptions.ca = [ certificateAuthority ];
                 }
                 const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsOverHttpsOptions);
-                
+
                 const axiosRequestConfig: AxiosRequestConfig = {
                     proxy: false,
-                }
-                
-                const baseUrlProtocol = parsedBaseUrl.protocol || 'http:';                
+                };
+
+                const baseUrlProtocol = parsedBaseUrl.protocol || 'http:';
                 const proxyProtocol = parsedProxyUrl.protocol || 'http:';
                 const urlIsHttps = baseUrlProtocol.startsWith('https:');
                 const proxyIsHttps = proxyProtocol.startsWith('https:');
@@ -167,16 +166,16 @@ export default class WorkspaceClient {
                 }
 
                 let axiosInstance = axios.create(axiosRequestConfig);
-        
+
                 axiosInstance.interceptors.request.use(request => {
-                    console.log('Starting Request', request)
-                    return request
-                })
-                
+                    console.log('Starting Request', request);
+                    return request;
+                });
+
                 axiosInstance.interceptors.response.use(response => {
-                    console.log('Response:', response)
-                    return response
-                })
+                    console.log('Response:', response);
+                    return response;
+                });
 
                 return axiosInstance;
             }
@@ -188,7 +187,7 @@ export default class WorkspaceClient {
                 })
             });
         }
-        return axios
+        return axios;
     }
 
     private static isItNode() {

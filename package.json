@@ -1,6 +1,6 @@
 {
   "name": "@ivinokur/workspace-client",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "This is a client for workspace REST API and workspace master JSON-RPC API interactions.",
   "main": "dist/server.js",
   "browser": "dist/client.js",
