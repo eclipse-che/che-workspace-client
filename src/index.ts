@@ -8,8 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import axios, {AxiosInstance, AxiosStatic} from 'axios';
-import { httpsOverHttp } from 'tunnel';
+import axios, {AxiosInstance, AxiosStatic, AxiosRequestConfig} from 'axios';
 import {IRemoteAPI, RemoteAPI} from './rest/remote-api';
 import {Resources} from './rest/resources';
 import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
@@ -17,6 +16,8 @@ import {WebSocketClient} from './json-rpc/web-socket-client';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as url from 'url';
+import * as http from 'http';
+import * as tunnel from 'tunnel';
 
 export * from './rest/remote-api';
 export * from './json-rpc/workspace-master-api';
@@ -52,29 +53,142 @@ export default class WorkspaceClient {
     }
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
-        if (config.ssCrtPath && this.isItNode() && fs.existsSync(config.ssCrtPath)) {
-            const proxy = process.env.http_proxy;
-            let agent;
-            if (proxy && proxy !== '' && config.baseUrl && config.baseUrl.startsWith('https://')) {
-                const pacedUrl = url.parse(proxy);
-                if (pacedUrl.host && pacedUrl.port) {
-                    agent = httpsOverHttp({
-                        proxy: {
-                            host: pacedUrl.host,
-                            port: Number(pacedUrl.port)
-                        },
-                        ca: [fs.readFileSync(config.ssCrtPath)]
-                    });
-                }
-            } else {
-                agent = new https.Agent({
-                    ca: fs.readFileSync(config.ssCrtPath)
-                });
-            }
-            return axios.create({httpsAgent: agent});
+        if (! this.isItNode()) {
+            return axios;
         }
 
-        return axios;
+        let certificateAuthority : Buffer | undefined = undefined
+        if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
+            certificateAuthority = fs.readFileSync(config.ssCrtPath);
+        }            
+        
+        const proxyUrl = process.env.http_proxy;
+        if (proxyUrl && proxyUrl !== '' && config.baseUrl) {
+            let mainProxyOptions: tunnel.ProxyOptions
+            var parsedProxyUrl = url.parse(proxyUrl);
+            let port = 3128
+            if (parsedProxyUrl.port && parsedProxyUrl.port !== '') {
+                port = Number(parsedProxyUrl.port)
+            }
+            mainProxyOptions = {
+                host: parsedProxyUrl.hostname!,
+                port: port
+              };
+    
+            if (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') {
+            mainProxyOptions.proxyAuth = parsedProxyUrl.auth;
+            }
+            
+            const noProxyEnv = process.env.no_proxy || process.env.NO_PROXY;
+            let noProxy: string[] = []
+            if (noProxyEnv) {
+                noProxy = noProxyEnv.split(',').map(function trim(s) {
+                    return s.trim();
+                });
+            }
+            
+            var parsedBaseUrl = url.parse(config.baseUrl);
+
+            let shouldProxy = false;
+            const hostname = parsedBaseUrl.hostname;
+            if (hostname) {
+                shouldProxy = !noProxy.some(function (rule) {
+                    if (!rule) {
+                        return false;
+                    }
+                    if (rule === '*') {
+                        return true;
+                    }
+                    if (rule[0] === '.' &&
+                        hostname.substr(hostname.length - rule.length) === rule) {
+                    return true;
+                    }
+        
+                    return hostname === rule;
+                });
+            }
+            
+            if (shouldProxy) {
+                const httpOverHttpAgent = tunnel.httpOverHttp({
+                    proxy: mainProxyOptions
+                });
+    
+                const httpsOverHttpOptions: tunnel.HttpsOverHttpOptions = {
+                    proxy: mainProxyOptions
+                }
+                if (certificateAuthority) {
+                    httpsOverHttpOptions.ca = [ certificateAuthority ];
+                }
+                const httpsOverHttpAgent = tunnel.httpsOverHttp(httpsOverHttpOptions);
+                
+                const httpsProxyOptions: tunnel.HttpsProxyOptions = {
+                    host: mainProxyOptions.host,
+                    port: mainProxyOptions.port,
+                    proxyAuth: mainProxyOptions.proxyAuth,
+                    servername: parsedBaseUrl.hostname
+                }
+                if (certificateAuthority) {
+                    httpsProxyOptions.ca = [ certificateAuthority ];
+                }
+
+                const httpOverHttpsAgent = tunnel.httpOverHttps({
+                    proxy: httpsProxyOptions
+                });
+                
+                const httpsOverHttpsOptions: tunnel.HttpsOverHttpsOptions = {
+                    proxy: httpsProxyOptions
+                }
+                if (certificateAuthority) {
+                    httpsOverHttpsOptions.ca = [ certificateAuthority ];
+                }
+                const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsOverHttpsOptions);
+                
+                const axiosRequestConfig: AxiosRequestConfig = {
+                    proxy: false,
+                }
+                
+                const baseUrlProtocol = parsedBaseUrl.protocol || 'http:';                
+                const proxyProtocol = parsedProxyUrl.protocol || 'http:';
+                const urlIsHttps = baseUrlProtocol.startsWith('https:');
+                const proxyIsHttps = proxyProtocol.startsWith('https:');
+
+                if (urlIsHttps) {
+                    if (proxyIsHttps) {
+                        axiosRequestConfig.httpsAgent = httpsOverHttpsAgent;
+                    } else {
+                        axiosRequestConfig.httpsAgent = httpsOverHttpAgent;
+                    }
+                } else {
+                    if (proxyIsHttps) {
+                        axiosRequestConfig.httpAgent = httpsOverHttpsAgent;
+                    } else {
+                        axiosRequestConfig.httpAgent = httpOverHttpsAgent;
+                    }
+                }
+
+                let axiosInstance = axios.create(axiosRequestConfig);
+        
+                axiosInstance.interceptors.request.use(request => {
+                    console.log('Starting Request', request)
+                    return request
+                })
+                
+                axiosInstance.interceptors.response.use(response => {
+                    console.log('Response:', response)
+                    return response
+                })
+
+                return axiosInstance;
+            }
+        }
+        if (certificateAuthority) {
+            return axios.create({
+                httpsAgent: new https.Agent({
+                    ca: certificateAuthority
+                })
+            });
+        }
+        return axios
     }
 
     private static isItNode() {
