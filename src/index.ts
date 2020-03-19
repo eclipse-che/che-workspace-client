@@ -8,14 +8,15 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosStatic, AxiosRequestConfig } from 'axios';
 import { IRemoteAPI, RemoteAPI } from './rest/remote-api';
 import { Resources } from './rest/resources';
+import { IWorkspaceMasterApi, WorkspaceMasterApi } from './json-rpc/workspace-master-api';
+import { WebSocketClient } from './json-rpc/web-socket-client';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as url from 'url';
 import * as tunnel from 'tunnel';
-import { UrlWithStringQuery } from 'url';
 
 export * from './rest/remote-api';
 export * from './json-rpc/workspace-master-api';
@@ -44,6 +45,11 @@ export default class WorkspaceClient {
 
         const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers);
         return new RemoteAPI(resources);
+    }
+
+    public static getJsonRpcApi(entryPoint: string): IWorkspaceMasterApi {
+        const transport = new WebSocketClient();
+        return new WorkspaceMasterApi(transport, entryPoint);
     }
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
@@ -125,7 +131,7 @@ export default class WorkspaceClient {
         return certificateAuthority;
     }
 
-    private static getMainProxyOptions(parsedProxyUrl: UrlWithStringQuery): tunnel.ProxyOptions {
+    private static getMainProxyOptions(parsedProxyUrl: url.UrlWithStringQuery): tunnel.ProxyOptions {
         const port = Number(parsedProxyUrl.port);
         return {
             host: parsedProxyUrl.hostname!,
