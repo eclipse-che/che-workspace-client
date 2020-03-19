@@ -8,20 +8,19 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import axios, {AxiosInstance, AxiosStatic, AxiosRequestConfig} from 'axios';
-import {IRemoteAPI, RemoteAPI} from './rest/remote-api';
-import {Resources} from './rest/resources';
-import {IWorkspaceMasterApi, WorkspaceMasterApi} from './json-rpc/workspace-master-api';
-import {WebSocketClient} from './json-rpc/web-socket-client';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { IRemoteAPI, RemoteAPI } from './rest/remote-api';
+import { Resources } from './rest/resources';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as url from 'url';
 import * as tunnel from 'tunnel';
+import { UrlWithStringQuery } from 'url';
 
 export * from './rest/remote-api';
 export * from './json-rpc/workspace-master-api';
 
-export  interface IRestAPIConfig {
+export interface IRestAPIConfig {
     baseUrl?: string;
     headers?: any;
     // path to self signed certificate
@@ -46,151 +45,118 @@ export default class WorkspaceClient {
         return new RemoteAPI(resources);
     }
 
-    public static getJsonRpcApi(entryPoint: string): IWorkspaceMasterApi {
-        const transport = new WebSocketClient();
-        return new WorkspaceMasterApi(transport, entryPoint);
-    }
-
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
-        if (! this.isItNode()) {
+        if (!this.isItNode()) {
+            this.addLogInterceptorsIfEnabled(axios);
             return axios;
         }
 
-        let certificateAuthority : Buffer | undefined;
-        if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
-            certificateAuthority = fs.readFileSync(config.ssCrtPath);
-        }
-
+        const certificateAuthority = this.getCertificateAuthority(config);
         const proxyUrl = process.env.http_proxy;
         if (proxyUrl && proxyUrl !== '' && config.baseUrl) {
-            let mainProxyOptions: tunnel.ProxyOptions;
-            var parsedProxyUrl = url.parse(proxyUrl);
-            let port = 3128;
-            if (parsedProxyUrl.port && parsedProxyUrl.port !== '') {
-                port = Number(parsedProxyUrl.port);
-            }
-            mainProxyOptions = {
-                host: parsedProxyUrl.hostname!,
-                port: port
-            };
-
-            if (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') {
-                mainProxyOptions.proxyAuth = parsedProxyUrl.auth;
-            }
-
-            const noProxyEnv = process.env.no_proxy || process.env.NO_PROXY;
-            let noProxy: string[] = [];
-            if (noProxyEnv) {
-                noProxy = noProxyEnv.split(',').map(function trim(s: string) {
-                    return s.trim();
-                });
-            }
-
-            var parsedBaseUrl = url.parse(config.baseUrl);
-
-            let shouldProxy = false;
-            const hostname = parsedBaseUrl.hostname;
-            if (hostname) {
-                shouldProxy = !noProxy.some(function (rule: string) {
-                    if (!rule) {
-                        return false;
-                    }
-                    if (rule === '*') {
-                        return true;
-                    }
-                    if (rule[0] === '.' &&
-                        hostname.substr(hostname.length - rule.length) === rule) {
-                        return true;
-                    }
-
-                    return hostname === rule;
-                });
-            }
-
-            if (shouldProxy) {
-                const httpOverHttpAgent = tunnel.httpOverHttp({
-                    proxy: mainProxyOptions
-                });
-
-                const httpsOverHttpOptions: tunnel.HttpsOverHttpOptions = {
-                    proxy: mainProxyOptions
-                };
-                if (certificateAuthority) {
-                    httpsOverHttpOptions.ca = [ certificateAuthority ];
-                }
-                const httpsOverHttpAgent = tunnel.httpsOverHttp(httpsOverHttpOptions);
-
-                const httpsProxyOptions: tunnel.HttpsProxyOptions = {
-                    host: mainProxyOptions.host,
-                    port: mainProxyOptions.port,
-                    proxyAuth: mainProxyOptions.proxyAuth,
-                    servername: parsedBaseUrl.hostname
-                };
-                if (certificateAuthority) {
-                    httpsProxyOptions.ca = [ certificateAuthority ];
-                }
-
-                const httpOverHttpsAgent = tunnel.httpOverHttps({
-                    proxy: httpsProxyOptions
-                });
-
-                const httpsOverHttpsOptions: tunnel.HttpsOverHttpsOptions = {
-                    proxy: httpsProxyOptions
-                };
-                if (certificateAuthority) {
-                    httpsOverHttpsOptions.ca = [ certificateAuthority ];
-                }
-                const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsOverHttpsOptions);
-
-                const axiosRequestConfig: AxiosRequestConfig = {
+            const parsedBaseUrl = url.parse(config.baseUrl);
+            if (parsedBaseUrl.hostname && this.shouldProxy(parsedBaseUrl.hostname)) {
+                const axiosRequestConfig: AxiosRequestConfig | undefined = {
                     proxy: false,
                 };
-
-                const baseUrlProtocol = parsedBaseUrl.protocol || 'http:';
-                const proxyProtocol = parsedProxyUrl.protocol || 'http:';
-                const urlIsHttps = baseUrlProtocol.startsWith('https:');
-                const proxyIsHttps = proxyProtocol.startsWith('https:');
-
+                const parsedProxyUrl = url.parse(proxyUrl);
+                const mainProxyOptions = this.getMainProxyOptions(parsedProxyUrl);
+                const httpsProxyOptions = this.getHttpsProxyOptions(mainProxyOptions, parsedBaseUrl.hostname, certificateAuthority);
+                const httpOverHttpsAgent = tunnel.httpOverHttps({ proxy: httpsProxyOptions });
+                const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsProxyOptions);
+                const urlIsHttps = (parsedBaseUrl.protocol || 'http:').startsWith('https:');
+                const proxyIsHttps = (parsedProxyUrl.protocol || 'http:').startsWith('https:');
                 if (urlIsHttps) {
                     if (proxyIsHttps) {
                         axiosRequestConfig.httpsAgent = httpsOverHttpsAgent;
                     } else {
-                        axiosRequestConfig.httpsAgent = httpsOverHttpAgent;
+                        axiosRequestConfig.httpsAgent = tunnel.httpsOverHttp({
+                            proxy: mainProxyOptions,
+                            ca: certificateAuthority ? [certificateAuthority] : undefined
+                        });
                     }
                 } else {
-                    if (proxyIsHttps) {
-                        axiosRequestConfig.httpAgent = httpsOverHttpsAgent;
-                    } else {
-                        axiosRequestConfig.httpAgent = httpOverHttpsAgent;
-                    }
+                    axiosRequestConfig.httpAgent = proxyIsHttps ? httpsOverHttpsAgent : httpOverHttpsAgent;
                 }
-
-                let axiosInstance = axios.create(axiosRequestConfig);
-
-                axiosInstance.interceptors.request.use(request => {
-                    console.log('Starting Request', request);
-                    return request;
-                });
-
-                axiosInstance.interceptors.response.use(response => {
-                    console.log('Response:', response);
-                    return response;
-                });
-
+                const axiosInstance = axios.create(axiosRequestConfig);
+                this.addLogInterceptorsIfEnabled(axiosInstance);
                 return axiosInstance;
             }
         }
         if (certificateAuthority) {
-            return axios.create({
+            const axiosInstance = axios.create({
                 httpsAgent: new https.Agent({
                     ca: certificateAuthority
                 })
             });
+            this.addLogInterceptorsIfEnabled(axiosInstance);
+            return axiosInstance;
         }
+        this.addLogInterceptorsIfEnabled(axios);
         return axios;
     }
 
     private static isItNode() {
         return (typeof process !== 'undefined') && (typeof process.versions.node !== 'undefined');
+    }
+
+    private static addLogInterceptorsIfEnabled(axiosInstance: AxiosInstance) {
+        if (!process.env.HTTP_REQUEST_LOG) {
+            return;
+        }
+        axiosInstance.interceptors.request.use(request => {
+            console.log('Starting Request', request);
+            return request;
+        });
+
+        axiosInstance.interceptors.response.use(response => {
+            console.log('Response:', response);
+            return response;
+        });
+    }
+
+    private static getCertificateAuthority(config: IRestAPIConfig): Buffer | undefined {
+        let certificateAuthority: Buffer | undefined;
+        if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
+            certificateAuthority = fs.readFileSync(config.ssCrtPath);
+        }
+        return certificateAuthority;
+    }
+
+    private static getMainProxyOptions(parsedProxyUrl: UrlWithStringQuery): tunnel.ProxyOptions {
+        const port = Number(parsedProxyUrl.port);
+        return {
+            host: parsedProxyUrl.hostname!,
+            port: ( parsedProxyUrl.port !== '' && !isNaN(port)) ? port : 3128,
+            proxyAuth: (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') ? parsedProxyUrl.auth : undefined
+        };
+    }
+
+    private static getHttpsProxyOptions(mainProxyOptions: tunnel.ProxyOptions, servername: string | undefined, certificateAuthority: Buffer | undefined): tunnel.HttpsProxyOptions {
+        return {
+            host: mainProxyOptions.host,
+            port: mainProxyOptions.port,
+            proxyAuth: mainProxyOptions.proxyAuth,
+            servername,
+            ca: certificateAuthority ? [certificateAuthority] : undefined
+        };
+    }
+
+    private static shouldProxy(hostname: string): boolean {
+        const noProxyEnv = process.env.no_proxy || process.env.NO_PROXY;
+        const noProxy: string[] = noProxyEnv ? noProxyEnv.split(',').map(s => s.trim()) : [];
+        return !noProxy.some(rule => {
+            if (!rule) {
+                return false;
+            }
+            if (rule === '*') {
+                return true;
+            }
+            if (rule[0] === '.' &&
+                hostname.substr(hostname.length - rule.length) === rule) {
+                return true;
+            }
+            return hostname === rule;
+        });
     }
 }
