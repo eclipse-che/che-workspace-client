@@ -63,21 +63,19 @@ export default class WorkspaceClient {
                 const parsedProxyUrl = url.parse(proxyUrl);
                 const mainProxyOptions = this.getMainProxyOptions(parsedProxyUrl);
                 const httpsProxyOptions = this.getHttpsProxyOptions(mainProxyOptions, parsedBaseUrl.hostname, certificateAuthority);
+                const httpOverHttpAgent = tunnel.httpOverHttp({ proxy: mainProxyOptions });
                 const httpOverHttpsAgent = tunnel.httpOverHttps({ proxy: httpsProxyOptions });
+                const httpsOverHttpAgent = tunnel.httpsOverHttp({
+                    proxy: mainProxyOptions,
+                    ca: certificateAuthority ? [certificateAuthority] : undefined
+                });
                 const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsProxyOptions);
                 const urlIsHttps = (parsedBaseUrl.protocol || 'http:').startsWith('https:');
                 const proxyIsHttps = (parsedProxyUrl.protocol || 'http:').startsWith('https:');
                 if (urlIsHttps) {
-                    if (proxyIsHttps) {
-                        axiosRequestConfig.httpsAgent = httpsOverHttpsAgent;
-                    } else {
-                        axiosRequestConfig.httpsAgent = tunnel.httpsOverHttp({
-                            proxy: mainProxyOptions,
-                            ca: certificateAuthority ? [certificateAuthority] : undefined
-                        });
-                    }
+                    axiosRequestConfig.httpsAgent = proxyIsHttps ? httpsOverHttpsAgent : httpsOverHttpAgent;
                 } else {
-                    axiosRequestConfig.httpAgent = proxyIsHttps ? httpsOverHttpsAgent : httpOverHttpsAgent;
+                    axiosRequestConfig.httpAgent = proxyIsHttps ? httpOverHttpsAgent : httpOverHttpAgent;
                 }
                 const axiosInstance = axios.create(axiosRequestConfig);
                 this.addLogInterceptorsIfEnabled(axiosInstance, config);
