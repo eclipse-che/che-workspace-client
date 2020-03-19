@@ -25,6 +25,7 @@ export interface IRestAPIConfig {
     headers?: any;
     // path to self signed certificate
     ssCrtPath?: string;
+    loggingEnabled?: boolean;
 }
 
 export default class WorkspaceClient {
@@ -47,7 +48,7 @@ export default class WorkspaceClient {
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
         if (!this.isItNode()) {
-            this.addLogInterceptorsIfEnabled(axios);
+            this.addLogInterceptorsIfEnabled(axios, config);
             return axios;
         }
 
@@ -79,7 +80,7 @@ export default class WorkspaceClient {
                     axiosRequestConfig.httpAgent = proxyIsHttps ? httpsOverHttpsAgent : httpOverHttpsAgent;
                 }
                 const axiosInstance = axios.create(axiosRequestConfig);
-                this.addLogInterceptorsIfEnabled(axiosInstance);
+                this.addLogInterceptorsIfEnabled(axiosInstance, config);
                 return axiosInstance;
             }
         }
@@ -89,10 +90,10 @@ export default class WorkspaceClient {
                     ca: certificateAuthority
                 })
             });
-            this.addLogInterceptorsIfEnabled(axiosInstance);
+            this.addLogInterceptorsIfEnabled(axiosInstance, config);
             return axiosInstance;
         }
-        this.addLogInterceptorsIfEnabled(axios);
+        this.addLogInterceptorsIfEnabled(axios, config);
         return axios;
     }
 
@@ -100,8 +101,8 @@ export default class WorkspaceClient {
         return (typeof process !== 'undefined') && (typeof process.versions.node !== 'undefined');
     }
 
-    private static addLogInterceptorsIfEnabled(axiosInstance: AxiosInstance) {
-        if (!process.env.HTTP_REQUEST_LOG) {
+    private static addLogInterceptorsIfEnabled(axiosInstance: AxiosInstance, config: IRestAPIConfig) {
+        if (!config.loggingEnabled) {
             return;
         }
         axiosInstance.interceptors.request.use(request => {
