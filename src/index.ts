@@ -69,7 +69,10 @@ export default class WorkspaceClient {
                     proxy: mainProxyOptions,
                     ca: certificateAuthority ? [certificateAuthority] : undefined
                 });
-                const httpsOverHttpsAgent = tunnel.httpsOverHttps(httpsProxyOptions);
+                const httpsOverHttpsAgent = tunnel.httpsOverHttps({
+                    proxy: httpsProxyOptions,
+                    ca: certificateAuthority ? [certificateAuthority] : undefined
+                });
                 const urlIsHttps = (parsedBaseUrl.protocol || 'http:').startsWith('https:');
                 const proxyIsHttps = (parsedProxyUrl.protocol || 'http:').startsWith('https:');
                 if (urlIsHttps) {
