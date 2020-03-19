@@ -51,6 +51,8 @@ var client = {
     target: 'web',
     node: {
         fs: 'empty',
+        net: 'empty',
+        tls: 'empty'
     },
     output: {
         filename: 'client.js',
