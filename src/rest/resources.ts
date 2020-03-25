@@ -56,6 +56,7 @@ export interface IResources {
     replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
     deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
     getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
+    updateActivity(workspaceId: string): AxiosPromise<void>;
 }
 
 export class Resources implements IResources {
@@ -277,6 +278,14 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: '/oauth'
+        });
+    }
+
+    public updateActivity(workspaceId: string): AxiosPromise<void> {
+        return this.axios.request<void>({
+            method: 'PUT',
+            baseURL: this.baseUrl,
+            url: `/activity/${workspaceId}`
         });
     }
 
