@@ -96,6 +96,7 @@ export interface IRemoteAPI {
     deleteUserPreferences(list: string[] | undefined): Promise<void>;
     getOAuthToken(oAuthProvider: string): Promise<string>;
     getOAuthProviders(): Promise<string[]>;
+    updateActivity(workspaceId: string): Promise<void>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -478,6 +479,22 @@ export class RemoteAPI implements IRemoteAPI {
                 .then((response: AxiosResponse<any[]>) => {
                     resolve(response.data.map(provider => provider.name));
                 })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    /**
+     * Updates workspace activity timestamp to prevent stop by timeout when workspace is running and using.
+     *
+     * @param {string} workspaceId a workspace ID to update activity timestamp
+     * @returns {Promise<any>}
+     */
+    public updateActivity(workspaceId: string): Promise<void> {
+        return new Promise<any>((resolve, reject) => {
+            this.remoteAPI.updateActivity(workspaceId)
+                .then((response: AxiosResponse<void>) => resolve())
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
                 });
