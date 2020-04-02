@@ -87,6 +87,12 @@ export interface IRemoteAPI {
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]>;
     deleteSshKey(service: string, name: string): Promise<void>;
+    /**
+     * Return the current authenticated user
+     *
+     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
+     *  the authorization header from the default headers list will be set.
+     */
     getCurrentUser(token?: string): Promise<User>;
     getUserPreferences(): Promise<Preferences>;
     getUserPreferences(filter: string | undefined): Promise<Preferences>;
@@ -94,7 +100,20 @@ export interface IRemoteAPI {
     replaceUserPreferences(preferences: Preferences): Promise<Preferences>;
     deleteUserPreferences(): Promise<void>;
     deleteUserPreferences(list: string[] | undefined): Promise<void>;
+    /**
+     * Return registered oauth token.
+     *
+     * @param oAuthProvider oauth provider's name e.g. github.
+     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
+     *  the authorization header from the default headers list will be set.
+     */
     getOAuthToken(oAuthProvider: string, token?: string): Promise<string>;
+    /**
+     * Return list of registered oAuth providers.
+     *
+     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
+     *  the authorization header from the default headers list will be set.
+     */
     getOAuthProviders(token?: string): Promise<string[]>;
     updateActivity(workspaceId: string): Promise<void>;
 }
