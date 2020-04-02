@@ -87,15 +87,15 @@ export interface IRemoteAPI {
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     getAllSshKey<T = che.ssh.SshPair>(service: string): Promise<T[]>;
     deleteSshKey(service: string, name: string): Promise<void>;
-    getCurrentUser(): Promise<User>;
+    getCurrentUser(token?: string): Promise<User>;
     getUserPreferences(): Promise<Preferences>;
     getUserPreferences(filter: string | undefined): Promise<Preferences>;
     updateUserPreferences(update: Preferences): Promise<Preferences>;
     replaceUserPreferences(preferences: Preferences): Promise<Preferences>;
     deleteUserPreferences(): Promise<void>;
     deleteUserPreferences(list: string[] | undefined): Promise<void>;
-    getOAuthToken(oAuthProvider: string): Promise<string>;
-    getOAuthProviders(): Promise<string[]>;
+    getOAuthToken(oAuthProvider: string, token?: string): Promise<string>;
+    getOAuthProviders(token?: string): Promise<string[]>;
     updateActivity(workspaceId: string): Promise<void>;
 }
 
@@ -401,9 +401,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getCurrentUser(): Promise<User> {
+    getCurrentUser(token?: string): Promise<User> {
         return new Promise((resolve, reject) => {
-            this.remoteAPI.getCurrentUser()
+            this.remoteAPI.getCurrentUser(token)
                 .then((response: AxiosResponse<User>) => {
                     resolve(response.data);
                 })
@@ -461,9 +461,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getOAuthToken(oAuthProvider: string): Promise<string> {
+    getOAuthToken(oAuthProvider: string, token?: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.remoteAPI.getOAuthToken(oAuthProvider)
+            this.remoteAPI.getOAuthToken(oAuthProvider, token)
                 .then((response: AxiosResponse<{ token: string }>) => {
                     resolve(response.data.token);
                 })
@@ -473,9 +473,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getOAuthProviders(): Promise<string[]> {
+    getOAuthProviders(token?: string): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            this.remoteAPI.getOAuthProviders()
+            this.remoteAPI.getOAuthProviders(token)
                 .then((response: AxiosResponse<any[]>) => {
                     resolve(response.data.map(provider => provider.name));
                 })
