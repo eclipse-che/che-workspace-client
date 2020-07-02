@@ -27,6 +27,8 @@ export interface IRestAPIConfig {
     // path to self signed certificate
     ssCrtPath?: string;
     loggingEnabled?: boolean;
+    machineToken?: string;
+    userToken?: string;
 }
 
 export default class WorkspaceClient {
@@ -43,7 +45,7 @@ export default class WorkspaceClient {
 
         const headers = config.headers || {};
 
-        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers);
+        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers, config.machineToken, config.userToken);
         return new RemoteAPI(resources);
     }
 

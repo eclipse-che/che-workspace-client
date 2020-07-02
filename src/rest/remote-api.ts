@@ -89,11 +89,8 @@ export interface IRemoteAPI {
     deleteSshKey(service: string, name: string): Promise<void>;
     /**
      * Return the current authenticated user
-     *
-     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
-     *  the authorization header from the default headers list will be set.
      */
-    getCurrentUser(token?: string): Promise<User>;
+    getCurrentUser(): Promise<User>;
     getUserPreferences(): Promise<Preferences>;
     getUserPreferences(filter: string | undefined): Promise<Preferences>;
     updateUserPreferences(update: Preferences): Promise<Preferences>;
@@ -104,17 +101,12 @@ export interface IRemoteAPI {
      * Return registered oauth token.
      *
      * @param oAuthProvider oauth provider's name e.g. github.
-     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
-     *  the authorization header from the default headers list will be set.
      */
-    getOAuthToken(oAuthProvider: string, token?: string): Promise<string>;
+    getOAuthToken(oAuthProvider: string): Promise<string>;
     /**
      * Return list of registered oAuth providers.
-     *
-     * @param token keycloak user token should be used for requesting CheAPI. In case it's missing -
-     *  the authorization header from the default headers list will be set.
      */
-    getOAuthProviders(token?: string): Promise<string[]>;
+    getOAuthProviders(): Promise<string[]>;
     updateActivity(workspaceId: string): Promise<void>;
 }
 
@@ -420,9 +412,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getCurrentUser(token?: string): Promise<User> {
+    getCurrentUser(): Promise<User> {
         return new Promise((resolve, reject) => {
-            this.remoteAPI.getCurrentUser(token)
+            this.remoteAPI.getCurrentUser()
                 .then((response: AxiosResponse<User>) => {
                     resolve(response.data);
                 })
@@ -480,9 +472,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getOAuthToken(oAuthProvider: string, token?: string): Promise<string> {
+    getOAuthToken(oAuthProvider: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.remoteAPI.getOAuthToken(oAuthProvider, token)
+            this.remoteAPI.getOAuthToken(oAuthProvider)
                 .then((response: AxiosResponse<{ token: string }>) => {
                     resolve(response.data.token);
                 })
@@ -492,9 +484,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getOAuthProviders(token?: string): Promise<string[]> {
+    getOAuthProviders(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            this.remoteAPI.getOAuthProviders(token)
+            this.remoteAPI.getOAuthProviders()
                 .then((response: AxiosResponse<any[]>) => {
                     resolve(response.data.map(provider => provider.name));
                 })
