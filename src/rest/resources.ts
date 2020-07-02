@@ -48,14 +48,14 @@ export interface IResources {
     createSshKey: (sshKeyPair: che.ssh.SshPair) => AxiosPromise<void>;
     getSshKey: <T>(service: string, name: string) => AxiosPromise<T>;
     getAllSshKey: <T>(service: string) => AxiosPromise<T[]>;
-    getOAuthProviders: (token?: string) => AxiosPromise<any[]>;
+    getOAuthProviders: () => AxiosPromise<any[]>;
     deleteSshKey(service: string, name: string): AxiosPromise<void>;
-    getCurrentUser(token?: string): AxiosPromise<User>;
+    getCurrentUser(): AxiosPromise<User>;
     getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
     updateUserPreferences(update: Preferences): AxiosPromise<Preferences>;
     replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
     deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
-    getOAuthToken(oAuthProvider: string, token?: string): AxiosPromise<{ token: string }>;
+    getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
     updateActivity(workspaceId: string): AxiosPromise<void>;
 }
 
@@ -66,7 +66,9 @@ export class Resources implements IResources {
 
     constructor(private readonly axios: AxiosInstance,
         private readonly baseUrl: string,
-        private readonly headers: { [headerTitle: string]: string } = {}) {
+        private readonly headers: { [headerTitle: string]: string } = {},
+        private readonly machineToken?: string,
+        private readonly userToken?: string) {
         for (const title in headers) {
             if (headers.hasOwnProperty(title)) {
                 this.axios.defaults.headers.common[title] = headers[title];
@@ -78,7 +80,8 @@ export class Resources implements IResources {
         return this.axios.request<T[]>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: this.workspaceUrl
+            url: this.workspaceUrl,
+            headers: this.getHeadersWithAuthorization(this.userToken)
         });
     }
 
@@ -86,7 +89,8 @@ export class Resources implements IResources {
         return this.axios.request<T[]>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/namespace/${namespace}`
+            url: `${this.workspaceUrl}/namespace/${namespace}`,
+            headers: this.getHeadersWithAuthorization(this.userToken)
         });
     }
 
@@ -94,7 +98,8 @@ export class Resources implements IResources {
         return this.axios.request<T>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceKey}`
+            url: `${this.workspaceUrl}/${workspaceKey}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -110,7 +115,8 @@ export class Resources implements IResources {
             method: 'POST',
             data: config,
             baseURL: this.baseUrl,
-            url: url
+            url: url,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -119,7 +125,8 @@ export class Resources implements IResources {
             method: 'PUT',
             data: workspace,
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceId}`
+            url: `${this.workspaceUrl}/${workspaceId}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -127,7 +134,8 @@ export class Resources implements IResources {
         return this.axios.request<any>({
             method: 'DELETE',
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceId}`
+            url: `${this.workspaceUrl}/${workspaceId}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -136,7 +144,8 @@ export class Resources implements IResources {
             method: 'POST',
             data: {},
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceId}/runtime?environment=${environmentName}`
+            url: `${this.workspaceUrl}/${workspaceId}/runtime?environment=${environmentName}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -146,6 +155,7 @@ export class Resources implements IResources {
             data: config,
             baseURL: this.baseUrl,
             url: `${this.workspaceUrl}/runtime?temporary=true`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -153,7 +163,8 @@ export class Resources implements IResources {
         return this.axios.request<any>({
             method: 'DELETE',
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceId}/runtime`
+            url: `${this.workspaceUrl}/${workspaceId}/runtime`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -161,7 +172,8 @@ export class Resources implements IResources {
         return this.axios.request<T>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/settings`
+            url: `${this.workspaceUrl}/settings`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -169,7 +181,8 @@ export class Resources implements IResources {
         return this.axios.request<T>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `${this.factoryUrl}/${factoryId}`
+            url: `${this.factoryUrl}/${factoryId}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -178,7 +191,8 @@ export class Resources implements IResources {
             method: 'POST',
             baseURL: this.baseUrl,
             data: {service: service, name: name},
-            url: `/ssh/generate`
+            url: `/ssh/generate`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -187,7 +201,8 @@ export class Resources implements IResources {
             method: 'POST',
             data: sshKeyPair,
             baseURL: this.baseUrl,
-            url: `/ssh/`
+            url: `/ssh/`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -195,7 +210,8 @@ export class Resources implements IResources {
         return this.axios.request<any>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `/ssh/${service}/find?name=${name}`
+            url: `/ssh/${service}/find?name=${name}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -203,16 +219,17 @@ export class Resources implements IResources {
         return this.axios.request<any>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: `/ssh/${service}`
+            url: `/ssh/${service}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
-    public getCurrentUser(token?: string): AxiosPromise<User> {
+    public getCurrentUser(): AxiosPromise<User> {
         return this.axios.request<User>({
             method: 'GET',
-            headers: this.getDefaultHeadersWithAuthorization(token),
             baseURL: this.baseUrl,
-            url: `/user`
+            url: `/user`,
+            headers: this.getHeadersWithAuthorization(this.userToken)
         });
     }
 
@@ -220,7 +237,8 @@ export class Resources implements IResources {
         return this.axios.request<any>({
             method: 'DELETE',
             baseURL: this.baseUrl,
-            url: `/ssh/${service}?name=${name}`
+            url: `/ssh/${service}?name=${name}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -228,7 +246,8 @@ export class Resources implements IResources {
         return this.axios.request<Preferences>({
             method: 'GET',
             baseURL: this.baseUrl,
-            url: filter ? `/preferences?filter=${filter}` : '/preferences'
+            url: filter ? `/preferences?filter=${filter}` : '/preferences',
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -237,7 +256,8 @@ export class Resources implements IResources {
             method: 'PUT',
             baseURL: this.baseUrl,
             url: `/preferences`,
-            data: update
+            data: update,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -246,7 +266,8 @@ export class Resources implements IResources {
             method: 'POST',
             baseURL: this.baseUrl,
             url: `/preferences`,
-            data: preferences
+            data: preferences,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
@@ -256,29 +277,31 @@ export class Resources implements IResources {
                 method: 'DELETE',
                 baseURL: this.baseUrl,
                 url: `/preferences`,
-                data: list
+                data: list,
+                headers: this.getHeadersWithAuthorization(this.machineToken)
             });
         }
         return this.axios.request<void>({
             method: 'DELETE',
             baseURL: this.baseUrl,
-            url: `/preferences`
+            url: `/preferences`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
-    public getOAuthToken(oAuthProvider: string, token?: string): AxiosPromise<{ token: string }> {
+    public getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }> {
         return this.axios.request<{ token: string }>({
             method: 'GET',
-            headers: this.getDefaultHeadersWithAuthorization(token),
             baseURL: this.baseUrl,
-            url: `/oauth/token?oauth_provider=${oAuthProvider}`
+            url: `/oauth/token?oauth_provider=${oAuthProvider}`,
+            headers: this.getHeadersWithAuthorization(this.userToken)
         });
     }
 
-    public getOAuthProviders(token?: string): AxiosPromise<any[]> {
+    public getOAuthProviders(): AxiosPromise<any[]> {
         return this.axios.request<any[]>({
             method: 'GET',
-            headers: this.getDefaultHeadersWithAuthorization(token),
+            headers: this.getHeadersWithAuthorization(this.userToken),
             baseURL: this.baseUrl,
             url: '/oauth'
         });
@@ -288,11 +311,12 @@ export class Resources implements IResources {
         return this.axios.request<void>({
             method: 'PUT',
             baseURL: this.baseUrl,
-            url: `/activity/${workspaceId}`
+            url: `/activity/${workspaceId}`,
+            headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }
 
-    private getDefaultHeadersWithAuthorization(token?: string): { [key: string]: string } {
+    private getHeadersWithAuthorization(token?: string): { [key: string]: string } {
         const headers: { [key: string]: string } = {};
         for (const key in this.headers) {
             if (this.headers.hasOwnProperty(key)) {

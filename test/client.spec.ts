@@ -36,7 +36,7 @@ describe('RestAPI >', () => {
       );
         await restApi.getAll();
         expect(axios.request).toHaveBeenCalledTimes(1);
-        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/workspace'});
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'headers': {}, 'method': 'GET', 'url': '/workspace'});
 
     });
 
@@ -50,7 +50,7 @@ describe('RestAPI >', () => {
         const preferences = await restApi.getUserPreferences();
 
         expect(axios.request).toHaveBeenCalledTimes(1);
-        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/preferences'});
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'headers':{}, 'method': 'GET', 'url': '/preferences'});
         expect(preferences).toBeDefined();
         expect(preferences).toHaveProperty('key1');
         expect(preferences).toHaveProperty('key2');
