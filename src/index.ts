@@ -26,6 +26,8 @@ export interface IRestAPIConfig {
     headers?: any;
     // path to self signed certificate
     ssCrtPath?: string;
+    // path to public certificates
+    publicCrtPath?: string;
     loggingEnabled?: boolean;
     machineToken?: string;
     userToken?: string;
@@ -75,11 +77,11 @@ export default class WorkspaceClient {
                 const httpOverHttpsAgent = tunnel.httpOverHttps({ proxy: httpsProxyOptions });
                 const httpsOverHttpAgent = tunnel.httpsOverHttp({
                     proxy: mainProxyOptions,
-                    ca: certificateAuthority ? [certificateAuthority] : undefined
+                    ca: certificateAuthority
                 });
                 const httpsOverHttpsAgent = tunnel.httpsOverHttps({
                     proxy: httpsProxyOptions,
-                    ca: certificateAuthority ? [certificateAuthority] : undefined
+                    ca: certificateAuthority
                 });
                 const urlIsHttps = (parsedBaseUrl.protocol || 'http:').startsWith('https:');
                 const proxyIsHttps = (parsedProxyUrl.protocol || 'http:').startsWith('https:');
@@ -125,12 +127,22 @@ export default class WorkspaceClient {
         });
     }
 
-    private static getCertificateAuthority(config: IRestAPIConfig): Buffer | undefined {
-        let certificateAuthority: Buffer | undefined;
+    private static getCertificateAuthority(config: IRestAPIConfig): Buffer[] | undefined {
+        const certificateAuthority: Buffer[] = [];
         if (config.ssCrtPath && fs.existsSync(config.ssCrtPath)) {
-            certificateAuthority = fs.readFileSync(config.ssCrtPath);
+            certificateAuthority.push(fs.readFileSync(config.ssCrtPath));
         }
-        return certificateAuthority;
+
+        if (config.publicCrtPath && fs.existsSync(config.publicCrtPath)) {
+            const publicCertificates = fs.readdirSync(config.publicCrtPath);
+            for (const publicCertificate of publicCertificates) {
+                if (publicCertificate.endsWith('.crt')) {
+                    certificateAuthority.push(fs.readFileSync(publicCertificate));
+                }
+            }
+        }
+
+        return certificateAuthority.length > 1 ? certificateAuthority : undefined;
     }
 
     private static getMainProxyOptions(parsedProxyUrl: url.UrlWithStringQuery): tunnel.ProxyOptions {
@@ -142,13 +154,13 @@ export default class WorkspaceClient {
         };
     }
 
-    private static getHttpsProxyOptions(mainProxyOptions: tunnel.ProxyOptions, servername: string | undefined, certificateAuthority: Buffer | undefined): tunnel.HttpsProxyOptions {
+    private static getHttpsProxyOptions(mainProxyOptions: tunnel.ProxyOptions, servername: string | undefined, certificateAuthority: Buffer[] | undefined): tunnel.HttpsProxyOptions {
         return {
             host: mainProxyOptions.host,
             port: mainProxyOptions.port,
             proxyAuth: mainProxyOptions.proxyAuth,
             servername,
-            ca: certificateAuthority ? [certificateAuthority] : undefined
+            ca: certificateAuthority
         };
     }
 
