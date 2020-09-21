@@ -59,4 +59,17 @@ describe('RestAPI >', () => {
         expect(preferences['key2']).toBe(5);
     });
 
+    it('should start the workspace', async () => {
+        const workspaceId = 'testWorkspaceId12345';
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
+        await restApi.start(workspaceId);
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            "data": {},
+            'headers': {},
+            'method': 'POST',
+            'url': `/workspace/${workspaceId}/runtime`
+        });
+    });
 });

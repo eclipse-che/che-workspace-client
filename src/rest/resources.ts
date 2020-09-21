@@ -39,7 +39,7 @@ export interface IResources {
     create: (config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams) => AxiosPromise<any>;
     update: (workspaceId: string, workspace: che.workspace.Workspace) => AxiosPromise<any>;
     delete: (workspaceId: string) => AxiosPromise<any>;
-    start: (workspaceId: string, environmentName: string) => AxiosPromise<any>;
+    start: (workspaceId: string) => AxiosPromise<any>;
     startTemporary: (config: che.workspace.WorkspaceConfig) => AxiosPromise<any>;
     stop: (workspaceId: string) => AxiosPromise<any>;
     getSettings: <T>() => AxiosPromise<T>;
@@ -139,12 +139,12 @@ export class Resources implements IResources {
         });
     }
 
-    public start(workspaceId: string, environmentName: string): AxiosPromise<any> {
+    public start(workspaceId: string): AxiosPromise<any> {
         return this.axios.request<any>({
             method: 'POST',
             data: {},
             baseURL: this.baseUrl,
-            url: `${this.workspaceUrl}/${workspaceId}/runtime?environment=${environmentName}`,
+            url: `${this.workspaceUrl}/${workspaceId}/runtime`,
             headers: this.getHeadersWithAuthorization(this.machineToken)
         });
     }

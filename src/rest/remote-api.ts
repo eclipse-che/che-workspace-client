@@ -77,7 +77,7 @@ export interface IRemoteAPI {
     create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
     update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
     delete(workspaceId: string): Promise<any>;
-    start(workspaceId: string, environmentName: string): Promise<any>;
+    start(workspaceId: string): Promise<any>;
     startTemporary(config: che.workspace.WorkspaceConfig): Promise<any>;
     stop(workspaceId: string): Promise<any>;
     getSettings<T = WorkspaceSettings>(): Promise<T>;
@@ -262,9 +262,9 @@ export class RemoteAPI implements IRemoteAPI {
      * @param {string} environmentName an environment name.
      * @returns {Promise<any>}
      */
-    public start(workspaceId: string, environmentName: string): Promise<any> {
+    public start(workspaceId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.remoteAPI.start(workspaceId, environmentName)
+            this.remoteAPI.start(workspaceId)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
                 })
