@@ -62,14 +62,31 @@ describe('RestAPI >', () => {
     it('should start the workspace', async () => {
         const workspaceId = 'testWorkspaceId12345';
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
-        await restApi.start(workspaceId);
+        await restApi.start(workspaceId, undefined);
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
             "data": {},
             'headers': {},
             'method': 'POST',
-            'url': `/workspace/${workspaceId}/runtime`
+            "params": {},
+            'url': `/workspace/${workspaceId}/runtime`,
         });
     });
+
+    it('should start the workspace in debug mode', async () => {
+        const workspaceId = 'testWorkspaceId12345';
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
+        await restApi.start(workspaceId, {'debug-workspace-start': true});
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            "data": {},
+            'headers': {},
+            'method': 'POST',
+            "params": {"debug-workspace-start": true},
+            'url': `/workspace/${workspaceId}/runtime`,
+        });
+    });
+
 });

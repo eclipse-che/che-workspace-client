@@ -48,7 +48,8 @@ export default class WorkspaceClient {
 
         const headers = config.headers || {};
 
-        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers, config.machineToken, config.userToken);
+        const token = config.userToken ? config.userToken : config.machineToken;
+        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers, token);
         return new RemoteAPI(resources);
     }
 

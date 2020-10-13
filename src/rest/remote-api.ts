@@ -9,7 +9,16 @@
  **********************************************************************/
 
 import { AxiosError, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { IResourceCreateQueryParams, IResources, WorkspaceSettings, Preferences, User } from './resources';
+import {
+    IResources,
+    WorkspaceSettings,
+    Preferences,
+    User,
+    KubernetesNamespace,
+    IResourceQueryParams,
+    IResourceCreateParams,
+    FactoryResolver,
+} from './resources';
 import { che } from '@eclipse-che/api';
 
 export enum METHOD {
@@ -74,14 +83,25 @@ export interface IRemoteAPI {
     getAll<T = che.workspace.Workspace>(): Promise<T[]>;
     getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]>;
     getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T>;
-    create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any>;
+    /**
+     * Creates a workspace from config.
+     *
+     * @param devfile workspace devfile.
+     * @param params optional creating params.
+     */
+    create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params: IResourceCreateParams | undefined): Promise<T>;
     update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
     delete(workspaceId: string): Promise<any>;
-    start(workspaceId: string): Promise<any>;
-    startTemporary(config: che.workspace.WorkspaceConfig): Promise<any>;
+    /**
+     * Starts a workspace.
+     *
+     * @param workspaceId a workspace ID.
+     * @param params resource query params.
+     */
+    start(workspaceId: string, params?: IResourceQueryParams): Promise<any>;
     stop(workspaceId: string): Promise<any>;
     getSettings<T = WorkspaceSettings>(): Promise<T>;
-    getFactory<T = che.factory.Factory>(factoryId: string): Promise<T>;
+    getFactoryResolver<T = che.workspace.devfile.Devfile>(url: string, headers?: { [name: string]: string }): Promise<T>;
     generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     createSshKey(sshKeyPair: che.ssh.SshPair): Promise<void>;
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
@@ -108,6 +128,14 @@ export interface IRemoteAPI {
      */
     getOAuthProviders(): Promise<string[]>;
     updateActivity(workspaceId: string): Promise<void>;
+    /**
+     * Returns list of kubernetes namespace.
+     */
+    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T>;
+    /**
+     * Returns a devfile schema object.
+     */
+    getDevfileSchema<T = Object>(): Promise<T>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -199,16 +227,9 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    /**
-     * Creates a workspace from config.
-     *
-     * @param {IWorkspaceConfig} config a workspace config.
-     * @param {IResourceCreateQueryParams} params
-     * @returns {Promise<any>}
-     */
-    public create(config: che.workspace.WorkspaceConfig, params: IResourceCreateQueryParams): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            this.remoteAPI.create(config, params)
+    public create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params: IResourceCreateParams | undefined): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.create(devfile, params)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
                 })
@@ -222,7 +243,7 @@ export class RemoteAPI implements IRemoteAPI {
      * Updates a workspace.
      *
      * @param {string} workspaceId a workspace ID to update
-     * @param {IWorkspace} workspace a new workspace data
+     * @param {che.workspace.Workspace} workspace a new workspace data
      * @returns {Promise<any>}
      */
     public update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any> {
@@ -255,34 +276,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Starts a workspace.
-     *
-     * @param {string} workspaceId a workspace ID.
-     * @param {string} environmentName an environment name.
-     * @returns {Promise<any>}
-     */
-    public start(workspaceId: string): Promise<any> {
+    public start(workspaceId: string, params?: IResourceQueryParams): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.remoteAPI.start(workspaceId)
-                .then((response: AxiosResponse<any>) => {
-                    resolve(response.data);
-                })
-                .catch((error: AxiosError) => {
-                    reject(new RequestError(error));
-                });
-        });
-    }
-
-    /**
-     * Starts a temporary workspace.
-     *
-     * @param {IWorkspaceConfig} config a workspace config.
-     * @returns {Promise<any>}
-     */
-    public startTemporary(config: che.workspace.WorkspaceConfig): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            this.remoteAPI.startTemporary(config)
+            this.remoteAPI.start(workspaceId, params)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
                 })
@@ -336,15 +332,9 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    /**
-     * Returns a factory by ID.
-     *
-     * @param {string} factoryId factory ID
-     * @returns {Promise<T>}
-     */
-    public getFactory<T = che.factory.Factory>(factoryId: string): Promise<T> {
+    getFactoryResolver<T = FactoryResolver>(url: string, headers?: { [name: string]: string }): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.remoteAPI.getFactory<T>(factoryId)
+            this.remoteAPI.getFactoryResolver<T>(url, headers)
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
                 })
@@ -489,6 +479,30 @@ export class RemoteAPI implements IRemoteAPI {
             this.remoteAPI.getOAuthProviders()
                 .then((response: AxiosResponse<any[]>) => {
                     resolve(response.data.map(provider => provider.name));
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.getKubernetesNamespace<T>()
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    getDevfileSchema<T = Object>(): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.getDevfileSchema<T>()
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
                 })
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
