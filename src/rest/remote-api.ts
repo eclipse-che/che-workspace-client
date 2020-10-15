@@ -80,28 +80,63 @@ class RequestError implements IRequestError {
 }
 
 export interface IRemoteAPI {
+    /**
+     * Returns list of all user's workspaces.
+     */
     getAll<T = che.workspace.Workspace>(): Promise<T[]>;
+    /**
+     * Returns list of workspaces in the namespace.
+     *
+     * @param namespace
+     */
     getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]>;
+    /**
+     * Returns a workspace by ID or key.
+     *
+     * @param workspaceKey workspace ID or `namespace/workspaceName`
+     */
     getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T>;
     /**
-     * Creates a workspace from config.
+     * Creates a new workspace from devfile.
      *
      * @param devfile workspace devfile.
      * @param params optional creating params.
      */
-    create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params: IResourceCreateParams | undefined): Promise<T>;
+    create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params?: IResourceCreateParams): Promise<T>;
+    /**
+     * Updates the workspace.
+     *
+     * @param workspaceId a workspace ID to update
+     * @param workspace a new workspace data
+     */
     update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
+    /**
+     * Deletes the workspace.
+     *
+     * @param workspaceId a workspace ID to delete
+     */
     delete(workspaceId: string): Promise<any>;
     /**
-     * Starts a workspace.
+     * Starts the workspace.
      *
      * @param workspaceId a workspace ID.
      * @param params resource query params.
      */
     start(workspaceId: string, params?: IResourceQueryParams): Promise<any>;
+    /**
+     * Stops the workspace.
+     *
+     * @param workspaceId a workspace ID.
+     */
     stop(workspaceId: string): Promise<any>;
+    /**
+     * Returns settings.
+     */
     getSettings<T = WorkspaceSettings>(): Promise<T>;
-    getFactoryResolver<T = che.workspace.devfile.Devfile>(url: string, headers?: { [name: string]: string }): Promise<T>;
+    /**
+     * Returns a factory resolver.
+     */
+    getFactoryResolver<T = FactoryResolver>(url: string): Promise<T>;
     generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     createSshKey(sshKeyPair: che.ssh.SshPair): Promise<void>;
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
@@ -127,6 +162,11 @@ export interface IRemoteAPI {
      * Return list of registered oAuth providers.
      */
     getOAuthProviders(): Promise<string[]>;
+    /**
+     * Updates workspace activity timestamp to prevent stop by timeout when workspace is running and using.
+     *
+     * @param workspaceId a workspace ID to update activity timestamp
+     */
     updateActivity(workspaceId: string): Promise<void>;
     /**
      * Returns list of kubernetes namespace.
@@ -147,11 +187,6 @@ export class RemoteAPI implements IRemoteAPI {
         this.remoteAPI = remoteApi;
     }
 
-    /**
-     * Returns list of all user's workspaces.
-     *
-     * @returns {Promise<T[]>}
-     */
     public getAll<T = che.workspace.Workspace>(): Promise<T[]> {
         const key = this.buildKey(METHOD.getAll);
         const promise = this.getRequestPromise(key);
@@ -173,12 +208,6 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    /**
-     * Returns list of workspaces in the namespace.
-     *
-     * @param {string} namespace
-     * @returns {Promise<T[]>}
-     */
     public getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]> {
         const key = this.buildKey(METHOD.getAllByNamespace, namespace);
         const promise = this.getRequestPromise(key);
@@ -200,12 +229,6 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    /**
-     * Returns a workspace by ID or key.
-     *
-     * @param {string} workspaceKey workspace ID or `namespace/workspaceName`
-     * @returns {Promise<T>}
-     */
     public getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T> {
         const key = this.buildKey(METHOD.getAllByNamespace, workspaceKey);
         const promise = this.getRequestPromise(key);
@@ -227,7 +250,7 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    public create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params: IResourceCreateParams | undefined): Promise<T> {
+    public create<T = che.workspace.Workspace>(devfile: che.workspace.devfile.Devfile, params?: IResourceCreateParams): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.remoteAPI.create(devfile, params)
                 .then((response: AxiosResponse<any>) => {
@@ -239,13 +262,6 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Updates a workspace.
-     *
-     * @param {string} workspaceId a workspace ID to update
-     * @param {che.workspace.Workspace} workspace a new workspace data
-     * @returns {Promise<any>}
-     */
     public update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.update(workspaceId, workspace)
@@ -258,12 +274,6 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Deletes a workspace.
-     *
-     * @param {string} workspaceId a workspace ID to delete
-     * @returns {Promise<any>}
-     */
     public delete(workspaceId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.delete(workspaceId)
@@ -288,12 +298,6 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Stops a workspace.
-     *
-     * @param {string} workspaceId a workspace ID.
-     * @returns {Promise<any>}
-     */
     public stop(workspaceId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.stop(workspaceId)
@@ -306,11 +310,6 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Returns settings.
-     *
-     * @returns {Promise<T>}
-     */
     public getSettings<T = WorkspaceSettings>(): Promise<T> {
         const key = this.buildKey(METHOD.getSettings);
         const promise = this.getRequestPromise(key);
@@ -332,9 +331,9 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    getFactoryResolver<T = FactoryResolver>(url: string, headers?: { [name: string]: string }): Promise<T> {
+    getFactoryResolver<T = FactoryResolver>(url: string): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.remoteAPI.getFactoryResolver<T>(url, headers)
+            this.remoteAPI.getFactoryResolver<T>(url)
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
                 })
@@ -355,6 +354,7 @@ export class RemoteAPI implements IRemoteAPI {
                 });
         });
     }
+
     public createSshKey(sshKeyPair: any): Promise<void> {
         return new Promise((resolve, reject) => {
             this.remoteAPI.createSshKey(sshKeyPair)
@@ -366,6 +366,7 @@ export class RemoteAPI implements IRemoteAPI {
                 });
         });
     }
+
     public getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.remoteAPI.getSshKey<T>(service, name)
@@ -439,7 +440,7 @@ export class RemoteAPI implements IRemoteAPI {
     }
 
     public replaceUserPreferences(preferences: Preferences): Promise<Preferences> {
-         return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this.remoteAPI.replaceUserPreferences(preferences)
                 .then((response: AxiosResponse<Preferences>) => {
                     resolve(response.data);
@@ -451,7 +452,7 @@ export class RemoteAPI implements IRemoteAPI {
     }
 
     public deleteUserPreferences(list: string[] | undefined = undefined): Promise<void> {
-         return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this.remoteAPI.deleteUserPreferences(list)
                 .then((response: AxiosResponse<void>) => {
                     resolve();
@@ -510,12 +511,6 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    /**
-     * Updates workspace activity timestamp to prevent stop by timeout when workspace is running and using.
-     *
-     * @param {string} workspaceId a workspace ID to update activity timestamp
-     * @returns {Promise<any>}
-     */
     public updateActivity(workspaceId: string): Promise<void> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.updateActivity(workspaceId)
@@ -558,7 +553,7 @@ export class RemoteAPI implements IRemoteAPI {
         this.promises.set(key, promise);
         promise.then(
             () => this.promises.delete(key),
-            () => this.promises.delete(key)
+            () => this.promises.delete(key),
         );
     }
 }
