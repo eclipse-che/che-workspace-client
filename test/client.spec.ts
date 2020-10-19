@@ -44,7 +44,7 @@ describe('RestAPI >', () => {
         axios.request.mockImplementationOnce(() =>
         Promise.resolve({
             status: 200,
-            data: {'key1':'value', 'key2': 5}
+            data: {'key1': 'value', 'key2': 5}
         })
       );
         const preferences = await restApi.getUserPreferences();
@@ -63,6 +63,7 @@ describe('RestAPI >', () => {
         const workspaceId = 'testWorkspaceId12345';
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
         await restApi.start(workspaceId, undefined);
+
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
@@ -77,6 +78,7 @@ describe('RestAPI >', () => {
         const workspaceId = 'testWorkspaceId12345';
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
         await restApi.start(workspaceId, {'debug-workspace-start': true});
+
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
@@ -85,6 +87,40 @@ describe('RestAPI >', () => {
             "params": {"debug-workspace-start": true},
             'url': `/workspace/${workspaceId}/runtime`,
         });
+    });
+
+    it('should returns devfile schema', async () => {
+        const devfileSchema = {
+            'meta:license': ['dummy', 'license'],
+            '$schema': 'http://json-schema.org/draft-07/schema#',
+            'type': 'object',
+            'title': 'Dummy devfile object',
+            'description': 'This dummy test schema describes the structure of the devfile object',
+        };
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: devfileSchema}));
+        const schema = await restApi.getDevfileSchema();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'GET',
+            'url': `/devfile`,
+        });
+        expect(schema).toBe(devfileSchema);
+    });
+
+    it('should returns kubernetes namespaces', async () => {
+        const kubernetesNamespaces = [{name: 'che-che', attributes: {phase: 'Active', default: 'true'}}];
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: kubernetesNamespaces}));
+        const namespaces = await restApi.getKubernetesNamespace();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'GET',
+            'url': `/kubernetes/namespace`,
+        });
+        expect(namespaces).toBe(kubernetesNamespaces);
     });
 
 });

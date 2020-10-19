@@ -36,7 +36,8 @@ export enum METHOD {
     getSettings
 }
 
-export interface IRequestConfig extends AxiosRequestConfig { }
+export interface IRequestConfig extends AxiosRequestConfig {
+}
 
 export interface IResponse<T> extends AxiosResponse<T> {
     data: T;
@@ -109,26 +110,26 @@ export interface IRemoteAPI {
      * @param workspaceId a workspace ID to update
      * @param workspace a new workspace data
      */
-    update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any>;
+    update<T = che.workspace.Workspace>(workspaceId: string, workspace: che.workspace.Workspace): Promise<T>;
     /**
      * Deletes the workspace.
      *
      * @param workspaceId a workspace ID to delete
      */
-    delete(workspaceId: string): Promise<any>;
+    delete(workspaceId: string): Promise<void>;
     /**
      * Starts the workspace.
      *
      * @param workspaceId a workspace ID.
      * @param params resource query params.
      */
-    start(workspaceId: string, params?: IResourceQueryParams): Promise<any>;
+    start<T = che.workspace.Workspace>(workspaceId: string, params?: IResourceQueryParams): Promise<T>;
     /**
      * Stops the workspace.
      *
      * @param workspaceId a workspace ID.
      */
-    stop(workspaceId: string): Promise<any>;
+    stop(workspaceId: string): Promise<void>;
     /**
      * Returns settings.
      */
@@ -262,7 +263,7 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    public update(workspaceId: string, workspace: che.workspace.Workspace): Promise<any> {
+    public update<T = che.workspace.Workspace>(workspaceId: string, workspace: che.workspace.Workspace): Promise<T> {
         return new Promise<any>((resolve, reject) => {
             this.remoteAPI.update(workspaceId, workspace)
                 .then((response: AxiosResponse<any>) => {
@@ -274,8 +275,8 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    public delete(workspaceId: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    public delete(workspaceId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this.remoteAPI.delete(workspaceId)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -286,8 +287,8 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    public start(workspaceId: string, params?: IResourceQueryParams): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    public start<T = che.workspace.Workspace>(workspaceId: string, params?: IResourceQueryParams): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
             this.remoteAPI.start(workspaceId, params)
                 .then((response: AxiosResponse<any>) => {
                     resolve(response.data);
@@ -298,11 +299,11 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    public stop(workspaceId: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    public stop(workspaceId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this.remoteAPI.stop(workspaceId)
                 .then((response: AxiosResponse<any>) => {
-                    resolve(response.data);
+                    resolve();
                 })
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
