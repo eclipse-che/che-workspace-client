@@ -46,9 +46,22 @@ export default class WorkspaceClient {
             baseUrl = baseUrl.substr(0, baseUrl.length - 1);
         }
 
-        const headers = config.headers || {};
+        const axios = this.createAxiosInstance(config)
 
-        const resources = new Resources(this.createAxiosInstance(config), baseUrl, headers, config.machineToken, config.userToken);
+        if (config.headers) {
+            for (const key in config.headers) {
+                if (config.headers.hasOwnProperty(key)) {
+                    axios.defaults.headers.common[key] = config.headers[key];
+                }
+            }
+            const token = config.userToken ? config.userToken : config.machineToken;
+            if (token) {
+                const header = 'Authorization';
+                axios.defaults.headers.common[header] = `Bearer ${token}`;
+            }
+        }
+
+        const resources = new Resources(axios, baseUrl);
         return new RemoteAPI(resources);
     }
 

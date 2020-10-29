@@ -9,7 +9,7 @@
  **********************************************************************/
 'use strict';
 
-import {IRemoteAPI} from '../src/rest/remote-api';
+import { IRemoteAPI } from '../src';
 import WorkspaceClient from '../src';
 import * as mockAxios from 'axios';
 
@@ -36,7 +36,7 @@ describe('RestAPI >', () => {
       );
         await restApi.getAll();
         expect(axios.request).toHaveBeenCalledTimes(1);
-        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'headers': {}, 'method': 'GET', 'url': '/workspace'});
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/workspace'});
 
     });
 
@@ -44,13 +44,13 @@ describe('RestAPI >', () => {
         axios.request.mockImplementationOnce(() =>
         Promise.resolve({
             status: 200,
-            data: {'key1':'value', 'key2': 5}
+            data: {'key1': 'value', 'key2': 5}
         })
       );
         const preferences = await restApi.getUserPreferences();
 
         expect(axios.request).toHaveBeenCalledTimes(1);
-        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'headers':{}, 'method': 'GET', 'url': '/preferences'});
+        expect(axios.request).toHaveBeenCalledWith({'baseURL': '/api', 'method': 'GET', 'url': '/preferences'});
         expect(preferences).toBeDefined();
         expect(preferences).toHaveProperty('key1');
         expect(preferences).toHaveProperty('key2');
@@ -62,14 +62,65 @@ describe('RestAPI >', () => {
     it('should start the workspace', async () => {
         const workspaceId = 'testWorkspaceId12345';
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
-        await restApi.start(workspaceId);
+        await restApi.start(workspaceId, undefined);
+
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
             "data": {},
-            'headers': {},
             'method': 'POST',
-            'url': `/workspace/${workspaceId}/runtime`
+            "params": {},
+            'url': `/workspace/${workspaceId}/runtime`,
         });
     });
+
+    it('should start the workspace in debug mode', async () => {
+        const workspaceId = 'testWorkspaceId12345';
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
+        await restApi.start(workspaceId, {'debug-workspace-start': true});
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            "data": {},
+            'method': 'POST',
+            "params": {"debug-workspace-start": true},
+            'url': `/workspace/${workspaceId}/runtime`,
+        });
+    });
+
+    it('should returns devfile schema', async () => {
+        const devfileSchema = {
+            'meta:license': ['dummy', 'license'],
+            '$schema': 'http://json-schema.org/draft-07/schema#',
+            'type': 'object',
+            'title': 'Dummy devfile object',
+            'description': 'This dummy test schema describes the structure of the devfile object',
+        };
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: devfileSchema}));
+        const schema = await restApi.getDevfileSchema();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'GET',
+            'url': `/devfile`,
+        });
+        expect(schema).toBe(devfileSchema);
+    });
+
+    it('should returns kubernetes namespaces', async () => {
+        const kubernetesNamespaces = [{name: 'che-che', attributes: {phase: 'Active', default: 'true'}}];
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: kubernetesNamespaces}));
+        const namespaces = await restApi.getKubernetesNamespace();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'GET',
+            'url': `/kubernetes/namespace`,
+        });
+        expect(namespaces).toBe(kubernetesNamespaces);
+    });
+
 });
