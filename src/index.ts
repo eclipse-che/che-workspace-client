@@ -54,11 +54,12 @@ export default class WorkspaceClient {
                     axios.defaults.headers.common[key] = config.headers[key];
                 }
             }
-            const token = config.userToken ? config.userToken : config.machineToken;
-            if (token) {
-                const header = 'Authorization';
-                axios.defaults.headers.common[header] = `Bearer ${token}`;
-            }
+        }
+        
+        const token = config.userToken ? config.userToken : config.machineToken;
+        if (token) {
+            const header = 'Authorization';
+            axios.defaults.headers.common[header] = `Bearer ${token}`;
         }
 
         const resources = new Resources(axios, baseUrl);
@@ -164,7 +165,7 @@ export default class WorkspaceClient {
         const port = Number(parsedProxyUrl.port);
         return {
             host: parsedProxyUrl.hostname!,
-            port: ( parsedProxyUrl.port !== '' && !isNaN(port)) ? port : 3128,
+            port: (parsedProxyUrl.port !== '' && !isNaN(port)) ? port : 3128,
             proxyAuth: (parsedProxyUrl.auth && parsedProxyUrl.auth !== '') ? parsedProxyUrl.auth : undefined
         };
     }
