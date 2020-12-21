@@ -55,7 +55,7 @@ export interface IRequestError extends Error {
     response?: IResponse<any>;
 }
 
-class RequestError implements IRequestError {
+export class RequestError implements IRequestError {
 
     status: number | undefined;
     name: string;
@@ -69,13 +69,29 @@ class RequestError implements IRequestError {
             this.status = Number(error.code);
         }
         this.name = error.name;
-        this.message = error.message;
         this.config = error.config;
         if (error.request) {
             this.request = error.request;
         }
         if (error.response) {
             this.response = error.response;
+        }
+        if ((this.status === -1 || !this.status) && (this.response && !this.response.status)) {
+            // request is interrupted, there is not even an error
+            this.message = `Failed to fetch the devfile due to network issues while requesting "${this.config.url}".`;
+        } else if (this.response && this.response.data && this.response.data.message) {
+            // che Server error that should be self-descriptive
+            this.message = this.response.data.message;
+        } else {
+            // the error is not from Che Server, so error may be in html format that we're not able to handle.
+            // displaying just a error code and URL.
+
+            // sometimes status won't be defined, so when it's not look into the response status more info
+            let status = this.status;
+            if (!this.status && this.response && this.response.status) {
+                status = this.response.status;
+            }
+            this.message = `Failed to fetch the devfile due to "${status}" returned by "${this.config.url}". See browser logs for more details"`;
         }
     }
 }
