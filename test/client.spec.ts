@@ -135,7 +135,7 @@ describe('RestAPI >', () => {
             toJSON: () => { return {}; }
         } as mockAxios.AxiosError;
         const requestError = new RequestError(axiosError);
-        expect(requestError.message).toBe(`Failed to fetch the devfile due to network issues while requesting "${url}".`);
+        expect(requestError.message).toBe(`network issues occured while requesting "${url}".`);
     });
 
     it('should return che server message when set', async () => {
@@ -145,7 +145,9 @@ describe('RestAPI >', () => {
                 url: url
             },
             response: {
-                data: ['sample response']
+                data: {
+                    message: 'sample response'
+                }
             },
             message: 'test',
             name: 'test',
@@ -154,7 +156,7 @@ describe('RestAPI >', () => {
             toJSON: () => { return {}; }
         } as mockAxios.AxiosError;
         const requestError = new RequestError(axiosError);
-        expect(requestError.message).toEqual(['sample response']);
+        expect(requestError.message).toEqual('sample response');
     });
 
     it('should return general error message when error is from che server', async () => {
@@ -171,7 +173,7 @@ describe('RestAPI >', () => {
             toJSON: () => { return {}; }
         } as mockAxios.AxiosError;
         const requestError = new RequestError(axiosError);
-        expect(requestError.message).toBe(`Failed to fetch the devfile due to "${code}" returned by "${url}. See browser logs for more details"`);
+        expect(requestError.message).toBe(`"${code}" returned by "${url}". See browser logs for more details"`);
     });
 
 });

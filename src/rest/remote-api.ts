@@ -76,9 +76,9 @@ export class RequestError implements IRequestError {
         if (error.response) {
             this.response = error.response;
         }
-        if ((this.status === -1 || !this.status) && (this.response && !this.response.status)) {
+        if ((this.status === -1 || !this.status) && (!this.response  || (this.response && !this.response.status))) {
             // request is interrupted, there is not even an error
-            this.message = `Failed to fetch the devfile due to network issues while requesting "${this.config.url}".`;
+            this.message = `network issues occured while requesting "${this.config.url}".`;
         } else if (this.response && this.response.data && this.response.data.message) {
             // che Server error that should be self-descriptive
             this.message = this.response.data.message;
@@ -90,8 +90,11 @@ export class RequestError implements IRequestError {
             let status = this.status;
             if (!this.status && this.response && this.response.status) {
                 status = this.response.status;
+            // defer to the status code of the request if there is no response
+            } else if (!this.status && this.request && this.request.status) {
+                status = this.request.status;
             }
-            this.message = `Failed to fetch the devfile due to "${status}" returned by "${this.config.url}". See browser logs for more details"`;
+            this.message = `"${status}" returned by "${this.config.url}". See browser logs for more details"`;
         }
     }
 }
