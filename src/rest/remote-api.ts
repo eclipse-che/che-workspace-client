@@ -94,7 +94,7 @@ export class RequestError implements IRequestError {
             } else if (!this.status && this.request && this.request.status) {
                 status = this.request.status;
             }
-            this.message = `"${status}" returned by "${this.config.url}". See browser logs for more details"`;
+            this.message = `"${status}" returned by "${this.config.url}"."`;
         }
     }
 }

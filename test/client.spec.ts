@@ -173,7 +173,7 @@ describe('RestAPI >', () => {
             toJSON: () => { return {}; }
         } as mockAxios.AxiosError;
         const requestError = new RequestError(axiosError);
-        expect(requestError.message).toBe(`"${code}" returned by "${url}". See browser logs for more details"`);
+        expect(requestError.message).toBe(`"${code}" returned by "${url}"."`);
     });
 
 });
