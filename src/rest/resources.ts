@@ -79,6 +79,7 @@ export interface IResources {
     updateActivity(workspaceId: string): AxiosPromise<void>;
     getKubernetesNamespace<T>(): AxiosPromise<T>;
     getDevfileSchema<T>(): AxiosPromise<T>;
+    getApiInfo<T>(): AxiosPromise<T>;
 }
 
 export class Resources implements IResources {
@@ -322,6 +323,13 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: '/kubernetes/namespace',
+        });
+    }
+
+    public getApiInfo<T>(): AxiosPromise<T> {
+        return this.axios.request<T>({
+            method: 'OPTIONS',
+            baseURL: this.baseUrl,
         });
     }
 }
