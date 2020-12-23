@@ -196,6 +196,10 @@ export interface IRemoteAPI {
      * Returns a devfile schema object.
      */
     getDevfileSchema<T = Object>(): Promise<T>;
+    /**
+     * Returns the che server api information
+     */
+    getApiInfo<T = Object>(): Promise<T>;
 }
 
 export class RemoteAPI implements IRemoteAPI {
@@ -522,6 +526,18 @@ export class RemoteAPI implements IRemoteAPI {
     getDevfileSchema<T = Object>(): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.remoteAPI.getDevfileSchema<T>()
+                .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    getApiInfo<T = Object>(): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.remoteAPI.getApiInfo<T>()
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
                 })
