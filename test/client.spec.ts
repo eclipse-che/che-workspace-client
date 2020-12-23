@@ -9,7 +9,7 @@
  **********************************************************************/
 'use strict';
 
-import { IRemoteAPI } from '../src';
+import { IRemoteAPI, RequestError } from '../src';
 import WorkspaceClient from '../src';
 import * as mockAxios from 'axios';
 
@@ -121,6 +121,59 @@ describe('RestAPI >', () => {
             'url': `/kubernetes/namespace`,
         });
         expect(namespaces).toBe(kubernetesNamespaces);
+    });
+
+    it('should returns generic error message when status code is not found', async () => {
+        const url = 'http://che.che';
+        const axiosError = {
+            config: {
+                url: url
+            },
+            message: 'test',
+            name: 'test',
+            isAxiosError: true,
+            toJSON: () => { return {}; }
+        } as mockAxios.AxiosError;
+        const requestError = new RequestError(axiosError);
+        expect(requestError.message).toBe(`network issues occured while requesting "${url}".`);
+    });
+
+    it('should return che server message when set', async () => {
+        const url = 'http://che.che';
+        const axiosError = {
+            config: {
+                url: url
+            },
+            response: {
+                data: {
+                    message: 'sample response'
+                }
+            },
+            message: 'test',
+            name: 'test',
+            code: '200',
+            isAxiosError: true,
+            toJSON: () => { return {}; }
+        } as mockAxios.AxiosError;
+        const requestError = new RequestError(axiosError);
+        expect(requestError.message).toEqual('sample response');
+    });
+
+    it('should return general error message when error is from che server', async () => {
+        const url = 'http://che.che';
+        const code = '200';
+        const axiosError = {
+            config: {
+                url: url
+            },
+            code: code,
+            message: 'test',
+            name: 'test',
+            isAxiosError: true,
+            toJSON: () => { return {}; }
+        } as mockAxios.AxiosError;
+        const requestError = new RequestError(axiosError);
+        expect(requestError.message).toBe(`"${code}" returned by "${url}"."`);
     });
 
 });
