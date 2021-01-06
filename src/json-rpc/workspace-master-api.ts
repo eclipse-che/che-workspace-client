@@ -11,6 +11,7 @@
 
 import {IClientEventHandler, ICommunicationClient} from './web-socket-client';
 import {JsonRpcApiClient} from './json-rpc-api-client';
+import {EventEmitter} from 'events';
 
 const enum MasterChannels {
     ENVIRONMENT_OUTPUT = 'machine/log',
@@ -30,7 +31,10 @@ enum MasterScopes {
 const SUBSCRIBE = 'subscribe';
 const UNSUBSCRIBE = 'unsubscribe';
 
+export type WebSocketsFailedCallback = (entrypoint: string) => void;
+
 export interface IWorkspaceMasterApi {
+    onDidWebSocketFail(callback: WebSocketsFailedCallback): void;
     connect(entryPoint: string): Promise<any>;
     subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
     unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
@@ -56,10 +60,12 @@ export interface IWorkspaceMasterApi {
 export class WorkspaceMasterApi implements IWorkspaceMasterApi {
     private jsonRpcApiClient: JsonRpcApiClient;
     private clientId: string;
+    private wsMasterEventEmitter: EventEmitter;
+    private webSocketFailedEventName = 'websocketChanged';
 
     private maxReconnectionAttempts = 5;
     private reconnectionAttemptNumber = 0;
-    private reconnectionDelay = 30000;
+    private reconnectionDelay = 3000;
 
     constructor (client: ICommunicationClient,
                  entryPoint: string) {
@@ -68,6 +74,11 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
 
         this.clientId = '';
         this.jsonRpcApiClient = new JsonRpcApiClient(client);
+        this.wsMasterEventEmitter = new EventEmitter();
+    }
+
+    onDidWebSocketFail(callback: WebSocketsFailedCallback): void {
+        this.wsMasterEventEmitter.on(this.webSocketFailedEventName, callback);
     }
 
     /**
@@ -249,6 +260,7 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
     private onConnectionClose(entryPoint: string): void {
         console.warn('WebSocket connection is closed.');
         if (this.reconnectionAttemptNumber === this.maxReconnectionAttempts) {
+            this.wsMasterEventEmitter.emit(this.webSocketFailedEventName, entryPoint);
             console.warn('The maximum number of attempts to reconnect WebSocket has been reached.');
             return;
         }
