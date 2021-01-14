@@ -11,6 +11,7 @@
 
 import {IClientEventHandler, ICommunicationClient} from './web-socket-client';
 import {JsonRpcApiClient} from './json-rpc-api-client';
+import {EventEmitter} from 'events';
 
 const enum MasterChannels {
     ENVIRONMENT_OUTPUT = 'machine/log',
@@ -30,7 +31,10 @@ enum MasterScopes {
 const SUBSCRIBE = 'subscribe';
 const UNSUBSCRIBE = 'unsubscribe';
 
+export type WebSocketsStatusChangeCallback = (failingWebSockets: string[]) => void;
+
 export interface IWorkspaceMasterApi {
+    onDidWebSocketStatusChange(callback: WebSocketsStatusChangeCallback): void;
     connect(entryPoint: string): Promise<any>;
     subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
     unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
@@ -56,18 +60,28 @@ export interface IWorkspaceMasterApi {
 export class WorkspaceMasterApi implements IWorkspaceMasterApi {
     private jsonRpcApiClient: JsonRpcApiClient;
     private clientId: string;
+    private wsMasterEventEmitter: EventEmitter;
+    private webSocketStatusChangeEventName = 'websocketChanged';
 
-    private maxReconnectionAttempts = 5;
+    private maxReconnectionAttempts = 30;
     private reconnectionAttemptNumber = 0;
     private reconnectionDelay = 30000;
+    private reconnectionInitialDelay = 1000;
+    private failingWebsockets: Set<string>;
 
     constructor (client: ICommunicationClient,
                  entryPoint: string) {
-        client.addListener('open', () => this.onConnectionOpen());
+        client.addListener('open', () => this.onConnectionOpen(entryPoint));
         client.addListener('close', () => this.onConnectionClose(entryPoint));
 
         this.clientId = '';
         this.jsonRpcApiClient = new JsonRpcApiClient(client);
+        this.wsMasterEventEmitter = new EventEmitter();
+        this.failingWebsockets = new Set();
+    }
+
+    onDidWebSocketStatusChange(callback: WebSocketsStatusChangeCallback): void {
+        this.wsMasterEventEmitter.on(this.webSocketStatusChangeEventName, callback);
     }
 
     /**
@@ -239,8 +253,10 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
         return this.clientId;
     }
 
-    private onConnectionOpen(): void {
+    private onConnectionOpen(entryPoint: string): void {
         if (this.reconnectionAttemptNumber !== 0) {
+            this.failingWebsockets.delete(entryPoint);
+            this.wsMasterEventEmitter.emit(this.webSocketStatusChangeEventName, this.failingWebsockets);
             console.warn('WebSocket connection is opened.');
         }
         this.reconnectionAttemptNumber = 0;
@@ -248,14 +264,24 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
 
     private onConnectionClose(entryPoint: string): void {
         console.warn('WebSocket connection is closed.');
-        if (this.reconnectionAttemptNumber === this.maxReconnectionAttempts) {
+        if (this.reconnectionAttemptNumber === 5) {
+            this.failingWebsockets.add(entryPoint);
+            this.wsMasterEventEmitter.emit(this.webSocketStatusChangeEventName, this.failingWebsockets);
+        } else if (this.reconnectionAttemptNumber === this.maxReconnectionAttempts) {
             console.warn('The maximum number of attempts to reconnect WebSocket has been reached.');
             return;
         }
 
         this.reconnectionAttemptNumber++;
-        // let very first reconnection happens immediately after the connection is closed.
-        const delay = this.reconnectionAttemptNumber === 1 ? 0 : this.reconnectionDelay;
+        let delay: number;
+        if (this.reconnectionAttemptNumber === 1) {
+            // let very first reconnection happens immediately after the connection is closed.
+            delay = 0;
+        } else if (this.reconnectionAttemptNumber <= 10) {
+            delay = this.reconnectionInitialDelay;
+        } else {
+            delay = this.reconnectionDelay;
+        }
 
         if (delay) {
             console.warn(`WebSocket will be reconnected in ${delay} ms...`);
