@@ -60,7 +60,7 @@ export interface IWorkspaceMasterApi {
  */
 export class WorkspaceMasterApi implements IWorkspaceMasterApi {
 
-    private refreshToken: RefreshToken;
+    private refreshToken?: RefreshToken;
     private jsonRpcApiClient: JsonRpcApiClient;
     private clientId: string;
     private wsMasterEventEmitter: EventEmitter;
@@ -76,7 +76,7 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
 
     constructor (client: ICommunicationClient,
                  entryPoint: string,
-                 refreshToken: RefreshToken) {
+                 refreshToken?: RefreshToken) {
         client.addListener('open', () => this.onConnectionOpen());
         client.addListener('close', () => this.onConnectionClose());
 
@@ -98,24 +98,27 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
      * @returns {Promise<any>}
      */
     connect(): Promise<any> {
-        return this.refreshToken().then((newToken) => {
-            const params: string[] = [`token=${newToken}`];
+        if (this.refreshToken) {
+            return this.refreshToken().then((newToken) => {
+                const params: string[] = [`token=${newToken}`];
 
-            if (this.clientId) {
-                params.push(`clientId=${this.clientId}`);
-            }
+                if (this.clientId) {
+                    params.push(`clientId=${this.clientId}`);
+                }
 
-            let entrypoint = this.entryPoint + this.websocketContext;
-            const queryStr = params.join('&');
-            if (/\?/.test(entrypoint) === false) {
-                entrypoint = entrypoint + '?' + queryStr;
-            } else {
-                entrypoint = entrypoint + '&' + queryStr;
-            }
-            return this.jsonRpcApiClient.connect(entrypoint).then(() => {
-                return this.fetchClientId();
+                let entrypoint = this.entryPoint + this.websocketContext;
+                const queryStr = params.join('&');
+                if (/\?/.test(entrypoint) === false) {
+                    entrypoint = entrypoint + '?' + queryStr;
+                } else {
+                    entrypoint = entrypoint + '&' + queryStr;
+                }
+                return this.jsonRpcApiClient.connect(entrypoint).then(() => {
+                    return this.fetchClientId();
+                });
             });
-        });
+        }
+        return Promise.resolve(undefined);
     }
 
     /**

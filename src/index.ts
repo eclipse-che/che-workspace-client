@@ -66,7 +66,7 @@ export default class WorkspaceClient {
         return new RemoteAPI(resources);
     }
 
-    public static getJsonRpcApi(entryPoint: string, refreshToken: RefreshToken): IWorkspaceMasterApi {
+    public static getJsonRpcApi(entryPoint: string, refreshToken?: RefreshToken): IWorkspaceMasterApi {
         const transport = new WebSocketClient();
         return new WorkspaceMasterApi(transport, entryPoint, refreshToken);
     }
