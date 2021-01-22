@@ -32,10 +32,11 @@ const SUBSCRIBE = 'subscribe';
 const UNSUBSCRIBE = 'unsubscribe';
 
 export type WebSocketsStatusChangeCallback = (failingWebSockets: string[]) => void;
+export type RefreshToken = () => Promise<string | Error>;
 
 export interface IWorkspaceMasterApi {
     onDidWebSocketStatusChange(callback: WebSocketsStatusChangeCallback): void;
-    connect(entryPoint: string): Promise<any>;
+    connect(): Promise<any>;
     subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
     unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
     subscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
@@ -58,6 +59,8 @@ export interface IWorkspaceMasterApi {
  * @author Ann Shumilova
  */
 export class WorkspaceMasterApi implements IWorkspaceMasterApi {
+
+    private refreshToken?: RefreshToken;
     private jsonRpcApiClient: JsonRpcApiClient;
     private clientId: string;
     private wsMasterEventEmitter: EventEmitter;
@@ -68,16 +71,21 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
     private reconnectionDelay = 30000;
     private reconnectionInitialDelay = 1000;
     private failingWebsockets: Set<string>;
+    private websocketContext = '/api/websocket';
+    private entryPoint: string;
 
     constructor (client: ICommunicationClient,
-                 entryPoint: string) {
-        client.addListener('open', () => this.onConnectionOpen(entryPoint));
-        client.addListener('close', () => this.onConnectionClose(entryPoint));
+                 entryPoint: string,
+                 refreshToken?: RefreshToken) {
+        client.addListener('open', () => this.onConnectionOpen());
+        client.addListener('close', () => this.onConnectionClose());
 
         this.clientId = '';
         this.jsonRpcApiClient = new JsonRpcApiClient(client);
         this.wsMasterEventEmitter = new EventEmitter();
         this.failingWebsockets = new Set();
+        this.entryPoint = entryPoint;
+        this.refreshToken = refreshToken;
     }
 
     onDidWebSocketStatusChange(callback: WebSocketsStatusChangeCallback): void {
@@ -87,25 +95,30 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
     /**
      * Opens connection to pointed entryPoint.
      *
-     * @param entryPoint
      * @returns {Promise<any>}
      */
-    connect(entryPoint: string): Promise<any> {
-        if (this.clientId) {
-            let clientId = `clientId=${this.clientId}`;
-            // in case of reconnection
-            // we need to test entryPoint on existing query parameters
-            // to add already gotten clientId
-            if (/\?/.test(entryPoint) === false) {
-                clientId = '?' + clientId;
-            } else {
-                clientId = '&' + clientId;
-            }
-            entryPoint += clientId;
+    connect(): Promise<any> {
+        if (this.refreshToken) {
+            return this.refreshToken().then((newToken) => {
+                const params: string[] = [`token=${newToken}`];
+
+                if (this.clientId) {
+                    params.push(`clientId=${this.clientId}`);
+                }
+
+                let entrypoint = this.entryPoint + this.websocketContext;
+                const queryStr = params.join('&');
+                if (/\?/.test(entrypoint) === false) {
+                    entrypoint = entrypoint + '?' + queryStr;
+                } else {
+                    entrypoint = entrypoint + '&' + queryStr;
+                }
+                return this.jsonRpcApiClient.connect(entrypoint).then(() => {
+                    return this.fetchClientId();
+                });
+            });
         }
-        return this.jsonRpcApiClient.connect(entryPoint).then(() => {
-            return this.fetchClientId();
-        });
+        return Promise.resolve(undefined);
     }
 
     /**
@@ -253,19 +266,19 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
         return this.clientId;
     }
 
-    private onConnectionOpen(entryPoint: string): void {
+    private onConnectionOpen(): void {
         if (this.reconnectionAttemptNumber !== 0) {
-            this.failingWebsockets.delete(entryPoint);
+            this.failingWebsockets.delete(this.entryPoint);
             this.wsMasterEventEmitter.emit(this.webSocketStatusChangeEventName, this.failingWebsockets);
             console.warn('WebSocket connection is opened.');
         }
         this.reconnectionAttemptNumber = 0;
     }
 
-    private onConnectionClose(entryPoint: string): void {
+    private onConnectionClose(): void {
         console.warn('WebSocket connection is closed.');
         if (this.reconnectionAttemptNumber === 5) {
-            this.failingWebsockets.add(entryPoint);
+            this.failingWebsockets.add(this.entryPoint);
             this.wsMasterEventEmitter.emit(this.webSocketStatusChangeEventName, this.failingWebsockets);
         } else if (this.reconnectionAttemptNumber === this.maxReconnectionAttempts) {
             console.warn('The maximum number of attempts to reconnect WebSocket has been reached.');
@@ -288,7 +301,7 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
         }
         setTimeout(() => {
             console.warn(`WebSocket is reconnecting, attempt #${this.reconnectionAttemptNumber} out of ${this.maxReconnectionAttempts}...`);
-            this.connect(entryPoint);
+            this.connect();
         }, delay);
     }
 

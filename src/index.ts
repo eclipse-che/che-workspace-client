@@ -8,10 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import axios, { AxiosInstance, AxiosStatic, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { IRemoteAPI, RemoteAPI } from './rest/remote-api';
 import { Resources } from './rest/resources';
-import { IWorkspaceMasterApi, WorkspaceMasterApi } from './json-rpc/workspace-master-api';
+import { IWorkspaceMasterApi, RefreshToken, WorkspaceMasterApi } from './json-rpc/workspace-master-api';
 import { WebSocketClient } from './json-rpc/web-socket-client';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -66,9 +66,9 @@ export default class WorkspaceClient {
         return new RemoteAPI(resources);
     }
 
-    public static getJsonRpcApi(entryPoint: string): IWorkspaceMasterApi {
+    public static getJsonRpcApi(entryPoint: string, refreshToken?: RefreshToken): IWorkspaceMasterApi {
         const transport = new WebSocketClient();
-        return new WorkspaceMasterApi(transport, entryPoint);
+        return new WorkspaceMasterApi(transport, entryPoint, refreshToken);
     }
 
     private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {
