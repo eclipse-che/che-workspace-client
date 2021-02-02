@@ -166,6 +166,7 @@ export interface IRemoteAPI {
      * Return the current authenticated user
      */
     getCurrentUser(): Promise<User>;
+    getCurrentUserProfile(): Promise<che.user.Profile>;
     getUserPreferences(): Promise<Preferences>;
     getUserPreferences(filter: string | undefined): Promise<Preferences>;
     updateUserPreferences(update: Preferences): Promise<Preferences>;
@@ -427,10 +428,22 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getCurrentUser(): Promise<User> {
+    public getCurrentUser(): Promise<User> {
         return new Promise((resolve, reject) => {
             this.remoteAPI.getCurrentUser()
                 .then((response: AxiosResponse<User>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    public getCurrentUserProfile(): Promise<che.user.Profile> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.getCurrentUserProfile()
+                .then((response: AxiosResponse<che.user.Profile>) => {
                     resolve(response.data);
                 })
                 .catch((error: AxiosError) => {
