@@ -71,6 +71,7 @@ export interface IResources {
     getOAuthProviders(): AxiosPromise<any[]>;
     deleteSshKey(service: string, name: string): AxiosPromise<void>;
     getCurrentUser(): AxiosPromise<User>;
+    getCurrentUserProfile(): AxiosPromise<che.user.Profile>;
     getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
     updateUserPreferences(update: Preferences): AxiosPromise<Preferences>;
     replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
@@ -233,6 +234,14 @@ export class Resources implements IResources {
             method: 'GET',
             baseURL: this.baseUrl,
             url: `/user`,
+        });
+    }
+
+    public getCurrentUserProfile(): AxiosPromise<che.user.Profile> {
+        return this.axios.request<User>({
+            method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/profile`,
         });
     }
 

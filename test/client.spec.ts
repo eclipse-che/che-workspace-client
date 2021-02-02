@@ -104,7 +104,7 @@ describe('RestAPI >', () => {
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
             'method': 'GET',
-            'url': `/devfile`,
+            'url': '/devfile',
         });
         expect(schema).toBe(devfileSchema);
     });
@@ -174,6 +174,28 @@ describe('RestAPI >', () => {
         } as mockAxios.AxiosError;
         const requestError = new RequestError(axiosError);
         expect(requestError.message).toBe(`"${code}" returned by "${url}"."`);
+    });
+
+    it('should returns current user profile', async () => {
+        const userProfile = {
+            attributes: {
+                firstName: 'John',
+                lastName: 'Doe',
+                preferred_username: 'Johnny',
+            },
+            email: 'johndoe@test.com',
+            userId: 'john-doe-id',
+        };
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: userProfile}));
+        const schema = await restApi.getCurrentUserProfile();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'GET',
+            'url': '/profile',
+        });
+        expect(schema).toBe(userProfile);
     });
 
 });
