@@ -14,7 +14,7 @@ import {JsonRpcApiClient} from './json-rpc-api-client';
 import {EventEmitter} from 'events';
 
 const enum MasterChannels {
-    ENVIRONMENT_OUTPUT = 'machine/log',
+    ENVIRONMENT_OUTPUT = 'runtime/log',
     ENVIRONMENT_STATUS = 'machine/statusChanged',
     WS_AGENT_OUTPUT = 'installer/log',
     WORKSPACE_STATUS = 'workspace/statusChanged',
