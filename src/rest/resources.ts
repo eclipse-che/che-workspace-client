@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import { AxiosInstance, AxiosPromise } from 'axios';
+import { AxiosInstance, AxiosPromise, AxiosRequestConfig } from 'axios';
 import { che } from '@eclipse-che/api';
 import * as Qs from 'qs';
 
@@ -79,7 +79,7 @@ export interface IResources {
     getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
     updateActivity(workspaceId: string): AxiosPromise<void>;
     getKubernetesNamespace<T>(): AxiosPromise<T>;
-    getDevfileSchema<T>(): AxiosPromise<T>;
+    getDevfileSchema<T>(version?: string): AxiosPromise<T>;
     getApiInfo<T>(): AxiosPromise<T>;
 }
 
@@ -319,12 +319,18 @@ export class Resources implements IResources {
         });
     }
 
-    public getDevfileSchema<T>(): AxiosPromise<T> {
-        return this.axios.request<T>({
+    public getDevfileSchema<T>(version?: string): AxiosPromise<T> {
+        const requestOptions = {
             method: 'GET',
             baseURL: this.baseUrl,
-            url: this.devfileUrl,
-        });
+            url: this.devfileUrl
+        } as AxiosRequestConfig;
+        if (version) {
+            requestOptions.params = {
+                version
+            };
+        }
+        return this.axios.request<T>(requestOptions);
     }
 
     public getKubernetesNamespace<T>(): AxiosPromise<T> {
