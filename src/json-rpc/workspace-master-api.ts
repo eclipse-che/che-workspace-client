@@ -15,8 +15,6 @@ import {EventEmitter} from 'events';
 
 const enum MasterChannels {
     ENVIRONMENT_OUTPUT = 'runtime/log',
-    ENVIRONMENT_STATUS = 'machine/statusChanged',
-    WS_AGENT_OUTPUT = 'installer/log',
     WORKSPACE_STATUS = 'workspace/statusChanged',
     ORGANIZATION_STATUS = 'organization/statusChanged',
     ORGANIZATION_MEMBERSHIP_STATUS = 'organization/membershipChanged'
@@ -39,10 +37,6 @@ export interface IWorkspaceMasterApi {
     connect(): Promise<any>;
     subscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
     unSubscribeEnvironmentOutput(workspaceId: string, callback: Function): void;
-    subscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
-    unSubscribeEnvironmentStatus(workspaceId: string, callback: Function): void;
-    subscribeWsAgentOutput(workspaceId: string, callback: Function): void;
-    unSubscribeWsAgentOutput(workspaceId: string, callback: Function): void;
     subscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
     unSubscribeWorkspaceStatus(workspaceId: string, callback: Function): void;
     subscribeOrganizationStatus(organizationId: string, callback: Function): void;
@@ -139,46 +133,6 @@ export class WorkspaceMasterApi implements IWorkspaceMasterApi {
      */
     unSubscribeEnvironmentOutput(workspaceId: string, callback: IClientEventHandler): void {
         this.unsubscribe(MasterChannels.ENVIRONMENT_OUTPUT, MasterScopes.WORKSPACE, workspaceId, callback);
-    }
-
-    /**
-     * Subscribes the environment status changed.
-     *
-     * @param workspaceId workspace's id
-     * @param callback callback to process event
-     */
-    subscribeEnvironmentStatus(workspaceId: string, callback: IClientEventHandler): void {
-        this.subscribe(MasterChannels.ENVIRONMENT_STATUS, MasterScopes.WORKSPACE, workspaceId, callback);
-    }
-
-    /**
-     * Un-subscribes the pointed callback from environment status changed.
-     *
-     * @param workspaceId workspace's id
-     * @param callback callback to process event
-     */
-    unSubscribeEnvironmentStatus(workspaceId: string, callback: IClientEventHandler): void {
-        this.unsubscribe(MasterChannels.ENVIRONMENT_STATUS, MasterScopes.WORKSPACE, workspaceId, callback);
-    }
-
-    /**
-     * Subscribes on workspace agent output.
-     *
-     * @param workspaceId workspace's id
-     * @param callback callback to process event
-     */
-    subscribeWsAgentOutput(workspaceId: string, callback: IClientEventHandler): void {
-        this.subscribe(MasterChannels.WS_AGENT_OUTPUT, MasterScopes.WORKSPACE, workspaceId, callback);
-    }
-
-    /**
-     * Un-subscribes from workspace agent output.
-     *
-     * @param workspaceId workspace's id
-     * @param callback callback to process event
-     */
-    unSubscribeWsAgentOutput(workspaceId: string, callback: IClientEventHandler): void {
-        this.unsubscribe(MasterChannels.WS_AGENT_OUTPUT, MasterScopes.WORKSPACE, workspaceId, callback);
     }
 
     /**
