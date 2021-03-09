@@ -29,7 +29,7 @@ enum MasterScopes {
 }
 
 const SUBSCRIBE = 'subscribe';
-const UNSUBSCRIBE = 'unsubscribe';
+const UNSUBSCRIBE = 'unSubscribe';
 
 export type WebSocketsStatusChangeCallback = (failingWebSockets: string[]) => void;
 export type RefreshToken = () => Promise<string | Error>;

@@ -48,13 +48,13 @@ export class JsonRpcApiClient {
    * Unsubscribe concrete handler from events from service.
    *
    * @param event event's name to unsubscribe
-   * @param notification notification name binded to the event
+   * @param notification notification name bound to the event
    * @param handler handler to be removed
    * @param params params (optional)
    */
   unsubscribe(event: string, notification: string, handler: IClientEventHandler, params?: any): void {
-    this.jsonRpcClient.removeNotificationHandler(event, handler);
-    this.jsonRpcClient.notify(event);
+    this.jsonRpcClient.removeNotificationHandler(notification, handler);
+    this.jsonRpcClient.notify(event, params);
   }
 
   /**
