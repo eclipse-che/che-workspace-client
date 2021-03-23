@@ -2,7 +2,7 @@ name: Release to NPM
 on:
   push:
     branches:
-      - "main"
+      - "master"
 
 jobs:
   build:
