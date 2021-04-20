@@ -198,4 +198,21 @@ describe('RestAPI >', () => {
         expect(schema).toBe(userProfile);
     });
 
+    it('should returns a factory resolver', async () => {
+      const url = 'http://test-location';
+      const overrideParams = {
+        'override.metadata.generateName': 'testPrefix'
+      };
+      axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: {}}));
+      await restApi.getFactoryResolver(url, overrideParams);
+
+      expect(axios.request).toHaveBeenCalledTimes(1);
+      expect(axios.request).toHaveBeenCalledWith({
+        'baseURL': '/api',
+        'method': 'POST',
+        'url': '/factory/resolver/',
+        'data': Object.assign(overrideParams, { url })
+      });
+    });
+
 });
