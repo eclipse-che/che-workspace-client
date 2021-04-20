@@ -156,7 +156,7 @@ export interface IRemoteAPI {
     /**
      * Returns a factory resolver.
      */
-    getFactoryResolver<T = FactoryResolver>(url: string): Promise<T>;
+    getFactoryResolver<T = FactoryResolver>(url: string, overrideParams?: { [params: string]: string }): Promise<T>;
     generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     createSshKey(sshKeyPair: che.ssh.SshPair): Promise<void>;
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
@@ -356,9 +356,9 @@ export class RemoteAPI implements IRemoteAPI {
         return newPromise;
     }
 
-    getFactoryResolver<T = FactoryResolver>(url: string): Promise<T> {
+    getFactoryResolver<T = FactoryResolver>(url: string, overrideParams?: { [params: string]: string }): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.remoteAPI.getFactoryResolver<T>(url)
+            this.remoteAPI.getFactoryResolver<T>(url, overrideParams)
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
                 })
