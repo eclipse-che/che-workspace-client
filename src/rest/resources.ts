@@ -1,5 +1,5 @@
 /*********************************************************************
- * Copyright (c) 2018 Red Hat, Inc.
+ * Copyright (c) 2018-2021 Red Hat, Inc.
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -15,7 +15,13 @@ import * as Qs from 'qs';
 export interface FactoryResolver {
     v: string;
     source: string;
-    devfile: che.workspace.devfile.Devfile
+    devfile: che.workspace.devfile.Devfile;
+    scm_info: {
+        clone_url: string;
+        scm_provider: string;
+        branch?: string;
+    };
+    links: che.core.rest.Link[];
 }
 
 export interface KubernetesNamespace {
