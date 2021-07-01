@@ -9,7 +9,9 @@
     "build": "rimraf dist && webpack-cli --mode production --config webpack.config.js",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "prepare": "yarn run test && yarn run build"
+    "prepare": "yarn run test && yarn run build",
+    "license:check": "docker run --rm -t -v ${PWD}/:/workspace/project quay.io/che-incubator/dash-licenses:next --check",
+    "license:generate": "docker run --rm -t -v ${PWD}/:/workspace/project quay.io/che-incubator/dash-licenses:next"
   },
   "contributors": [
     {
