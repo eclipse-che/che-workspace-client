@@ -84,7 +84,8 @@ export interface IResources {
     deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
     getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
     updateActivity(workspaceId: string): AxiosPromise<void>;
-    getKubernetesNamespace<T>(): AxiosPromise<T>;
+    getKubernetesNamespaces<T>(): AxiosPromise<T>;
+    provisionKubernetesNamespace(): AxiosPromise<KubernetesNamespace>;
     getDevfileSchema<T>(version?: string): AxiosPromise<T>;
     getApiInfo<T>(): AxiosPromise<T>;
 }
@@ -341,11 +342,19 @@ export class Resources implements IResources {
         return this.axios.request<T>(requestOptions);
     }
 
-    public getKubernetesNamespace<T>(): AxiosPromise<T> {
+    public getKubernetesNamespaces<T>(): AxiosPromise<T> {
         return this.axios.request<T>({
             method: 'GET',
             baseURL: this.baseUrl,
             url: '/kubernetes/namespace',
+        });
+    }
+
+    public provisionKubernetesNamespace(): AxiosPromise<KubernetesNamespace> {
+        return this.axios.request({
+            method: 'POST',
+            baseURL: this.baseUrl,
+            url: '/kubernetes/namespace/provision',
         });
     }
 

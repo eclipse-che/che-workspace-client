@@ -192,7 +192,11 @@ export interface IRemoteAPI {
     /**
      * Returns list of kubernetes namespace.
      */
-    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T>;
+    getKubernetesNamespaces<T = KubernetesNamespace[]>(): Promise<T>;
+    /**
+     * Returns kubernetes namespace.
+     */
+    provisionKubernetesNamespace(): Promise<KubernetesNamespace>;
     /**
      * Returns a devfile schema object.
      */
@@ -524,10 +528,22 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T> {
+    getKubernetesNamespaces<T = KubernetesNamespace[]>(): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.remoteAPI.getKubernetesNamespace<T>()
+            this.remoteAPI.getKubernetesNamespaces<T>()
                 .then((response: AxiosResponse<T>) => {
+                    resolve(response.data);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    provisionKubernetesNamespace(): Promise<KubernetesNamespace> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.provisionKubernetesNamespace()
+                .then((response: AxiosResponse<KubernetesNamespace>) => {
                     resolve(response.data);
                 })
                 .catch((error: AxiosError) => {
