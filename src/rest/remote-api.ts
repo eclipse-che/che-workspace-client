@@ -194,11 +194,13 @@ export interface IRemoteAPI {
      */
     getKubernetesNamespaces<T = KubernetesNamespace[]>(): Promise<T>;
     /**
-     * Returns kubernetes namespace.
+     * Provision k8s namespace where user is able to create workspaces. Returns the kubernetes namespace.
      */
     provisionKubernetesNamespace(): Promise<KubernetesNamespace>;
     /**
-     * Returns a devfile schema object.
+     * Returns the devfile JSON Schema.
+     *
+     * @param version a devfile version.
      */
     getDevfileSchema<T = Object>(version?: string): Promise<T>;
     /**
