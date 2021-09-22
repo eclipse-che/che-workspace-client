@@ -12,6 +12,7 @@
 import { IRemoteAPI, RequestError } from '../src';
 import WorkspaceClient from '../src';
 import * as mockAxios from 'axios';
+import { KubernetesNamespace } from '../src/rest/resources';
 
 const axios = (mockAxios as any);
 
@@ -109,7 +110,7 @@ describe('RestAPI >', () => {
         expect(schema).toBe(devfileSchema);
     });
 
-    it('should returns kubernetes namespaces', async () => {
+    it('should returns list of kubernetes namespace', async () => {
         const kubernetesNamespaces = [{name: 'che-che', attributes: {phase: 'Active', default: 'true'}}];
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: kubernetesNamespaces}));
         const namespaces = await restApi.getKubernetesNamespace();
@@ -121,6 +122,20 @@ describe('RestAPI >', () => {
             'url': `/kubernetes/namespace`,
         });
         expect(namespaces).toBe(kubernetesNamespaces);
+    });
+
+    it('should returns kubernetes namespace', async () => {
+        const kubernetesNamespace = {name: 'che-che', attributes: {phase: 'Active', default: 'true'}};
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: kubernetesNamespace}));
+        const namespace = await restApi.provisionKubernetesNamespace();
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'POST',
+            'url': `/kubernetes/namespace/provision`,
+        });
+        expect(namespace).toBe(kubernetesNamespace);
     });
 
     it('should returns generic error message when status code is not found', async () => {
