@@ -110,10 +110,10 @@ describe('RestAPI >', () => {
         expect(schema).toBe(devfileSchema);
     });
 
-    it('should returns kubernetes namespaces', async () => {
+    it('should returns list of kubernetes namespace', async () => {
         const kubernetesNamespaces = [{name: 'che-che', attributes: {phase: 'Active', default: 'true'}}];
         axios.request.mockImplementationOnce(() => Promise.resolve({status: 200, data: kubernetesNamespaces}));
-        const namespaces = await restApi.getKubernetesNamespaces();
+        const namespaces = await restApi.getKubernetesNamespace();
 
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({

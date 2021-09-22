@@ -192,7 +192,7 @@ export interface IRemoteAPI {
     /**
      * Returns list of kubernetes namespace.
      */
-    getKubernetesNamespaces<T = KubernetesNamespace[]>(): Promise<T>;
+    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T>;
     /**
      * Provision k8s namespace where user is able to create workspaces. Returns the kubernetes namespace.
      */
@@ -530,9 +530,9 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    getKubernetesNamespaces<T = KubernetesNamespace[]>(): Promise<T> {
+    getKubernetesNamespace<T = KubernetesNamespace[]>(): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.remoteAPI.getKubernetesNamespaces<T>()
+            this.remoteAPI.getKubernetesNamespace<T>()
                 .then((response: AxiosResponse<T>) => {
                     resolve(response.data);
                 })
