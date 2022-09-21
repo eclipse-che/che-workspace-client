@@ -157,6 +157,11 @@ export interface IRemoteAPI {
      * Returns a factory resolver.
      */
     getFactoryResolver<T = FactoryResolver>(url: string, overrideParams?: { [params: string]: string }): Promise<T>;
+
+    /**
+     * Check the factory related OAuth token and set (update) git-credentials.
+     */
+    refreshFactoryOauthToken(url: string): Promise<void>;
     generateSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
     createSshKey(sshKeyPair: che.ssh.SshPair): Promise<void>;
     getSshKey<T = che.ssh.SshPair>(service: string, name: string): Promise<T>;
@@ -371,6 +376,16 @@ export class RemoteAPI implements IRemoteAPI {
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
                 });
+        });
+    }
+
+    refreshFactoryOauthToken(url: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.refreshFactoryOauthToken(url)
+              .then(() => resolve())
+              .catch((error: AxiosError) => {
+                  reject(new RequestError(error));
+              });
         });
     }
 

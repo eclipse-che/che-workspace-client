@@ -70,6 +70,7 @@ export interface IResources {
     stop(workspaceId: string): AxiosPromise<void>;
     getSettings<T>(): AxiosPromise<T>;
     getFactoryResolver<T>(url: string, overrideParams?: { [params: string]: string }): AxiosPromise<T>;
+    refreshFactoryOauthToken(url: string): AxiosPromise<void>;
     generateSshKey<T>(service: string, name: string): AxiosPromise<T>;
     createSshKey(sshKeyPair: che.ssh.SshPair): AxiosPromise<void>;
     getSshKey<T>(service: string, name: string): AxiosPromise<T>;
@@ -201,6 +202,14 @@ export class Resources implements IResources {
             baseURL: this.baseUrl,
             url: `${this.factoryUrl}/resolver/`,
             data
+        });
+    }
+
+    public refreshFactoryOauthToken(url: string): AxiosPromise<void> {
+        return this.axios.request<void>({
+            method: 'POST',
+            baseURL: this.baseUrl,
+            url: `${this.factoryUrl}/token/refresh?url=${url}`
         });
     }
 

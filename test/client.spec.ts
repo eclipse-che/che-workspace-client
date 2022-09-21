@@ -230,4 +230,16 @@ describe('RestAPI >', () => {
       });
     });
 
+  it('should call refresh factory token', async () => {
+    axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
+    await restApi.refreshFactoryOauthToken('http://test-location');
+
+    expect(axios.request).toHaveBeenCalledTimes(1);
+    expect(axios.request).toHaveBeenCalledWith({
+      'baseURL': '/api',
+      'method': 'POST',
+      'url': '/factory/token/refresh?url=http://test-location'
+    });
+  });
+
 });
