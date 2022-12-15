@@ -84,6 +84,7 @@ export interface IResources {
     replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
     deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
     getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
+    deleteOAuthToken(oAuthProvider: string): AxiosPromise<void>;
     updateActivity(workspaceId: string): AxiosPromise<void>;
     getKubernetesNamespace<T>(): AxiosPromise<T>;
     provisionKubernetesNamespace(): AxiosPromise<KubernetesNamespace>;
@@ -316,6 +317,14 @@ export class Resources implements IResources {
     public getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }> {
         return this.axios.request<{ token: string }>({
             method: 'GET',
+            baseURL: this.baseUrl,
+            url: `/oauth/token?oauth_provider=${oAuthProvider}`,
+        });
+    }
+
+    public deleteOAuthToken(oAuthProvider: string): AxiosPromise<void> {
+        return this.axios.request<void>({
+            method: 'DELETE',
             baseURL: this.baseUrl,
             url: `/oauth/token?oauth_provider=${oAuthProvider}`,
         });

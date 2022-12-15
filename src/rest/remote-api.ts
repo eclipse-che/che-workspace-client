@@ -185,6 +185,12 @@ export interface IRemoteAPI {
      */
     getOAuthToken(oAuthProvider: string): Promise<string>;
     /**
+     * Delete registered oauth token.
+     *
+     * @param oAuthProvider oauth provider's name e.g. github.
+     */
+    deleteOAuthToken(oAuthProvider: string): Promise<string>;
+    /**
      * Return list of registered oAuth providers.
      */
     getOAuthProviders(): Promise<string[]>;
@@ -526,6 +532,18 @@ export class RemoteAPI implements IRemoteAPI {
             this.remoteAPI.getOAuthToken(oAuthProvider)
                 .then((response: AxiosResponse<{ token: string }>) => {
                     resolve(response.data.token);
+                })
+                .catch((error: AxiosError) => {
+                    reject(new RequestError(error));
+                });
+        });
+    }
+
+    deleteOAuthToken(oAuthProvider: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.remoteAPI.deleteOAuthToken(oAuthProvider)
+                .then((response: AxiosResponse<void>) => {
+                    resolve();
                 })
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
