@@ -242,4 +242,15 @@ describe('RestAPI >', () => {
     });
   });
 
+    it('should call refresh factory token', async () => {
+        axios.request.mockImplementationOnce(() => Promise.resolve({status: 200}));
+        await restApi.deleteOAuthToken('test_token_hgjhkvkjjhmbm');
+
+        expect(axios.request).toHaveBeenCalledTimes(1);
+        expect(axios.request).toHaveBeenCalledWith({
+            'baseURL': '/api',
+            'method': 'DELETE',
+            'url': '/oauth/token?oauth_provider=test_token_hgjhkvkjjhmbm'
+        });
+    });
 });
