@@ -55,7 +55,7 @@ export default class WorkspaceClient {
                 }
             }
         }
-        
+
         const token = config.userToken ? config.userToken : config.machineToken;
         if (token) {
             const header = 'Authorization';

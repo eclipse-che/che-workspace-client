@@ -189,7 +189,7 @@ export interface IRemoteAPI {
      *
      * @param oAuthProvider oauth provider's name e.g. github.
      */
-    deleteOAuthToken(oAuthProvider: string): Promise<string>;
+    deleteOAuthToken(oAuthProvider: string): Promise<void>;
     /**
      * Return list of registered oAuth providers.
      */
@@ -539,12 +539,10 @@ export class RemoteAPI implements IRemoteAPI {
         });
     }
 
-    deleteOAuthToken(oAuthProvider: string): Promise<string> {
+    deleteOAuthToken(oAuthProvider: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.remoteAPI.deleteOAuthToken(oAuthProvider)
-                .then((response: AxiosResponse<void>) => {
-                    resolve();
-                })
+                .then(() => resolve())
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
                 });
@@ -612,9 +610,9 @@ export class RemoteAPI implements IRemoteAPI {
     }
 
     public updateActivity(workspaceId: string): Promise<void> {
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             this.remoteAPI.updateActivity(workspaceId)
-                .then((response: AxiosResponse<void>) => resolve())
+                .then(() => resolve())
                 .catch((error: AxiosError) => {
                     reject(new RequestError(error));
                 });

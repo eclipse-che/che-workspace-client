@@ -12,7 +12,6 @@
 import { IRemoteAPI, RequestError } from '../src';
 import WorkspaceClient from '../src';
 import * as mockAxios from 'axios';
-import { KubernetesNamespace } from '../src/rest/resources';
 
 const axios = (mockAxios as any);
 
@@ -22,10 +21,11 @@ describe('RestAPI >', () => {
 
     beforeEach(() => {
         restApi = WorkspaceClient.getRestApi();
-        jest.resetAllMocks()
+        jest.resetAllMocks();
     });
 
     afterEach(() => {
+        // no-op
     });
 
    it('dummy test', async () => {
@@ -56,8 +56,8 @@ describe('RestAPI >', () => {
         expect(preferences).toHaveProperty('key1');
         expect(preferences).toHaveProperty('key2');
         expect(preferences).not.toHaveProperty('key3');
-        expect(preferences['key1']).toBe('value');
-        expect(preferences['key2']).toBe(5);
+        expect(preferences.key1).toBe('value');
+        expect(preferences.key2).toBe(5);
     });
 
     it('should start the workspace', async () => {
@@ -68,9 +68,9 @@ describe('RestAPI >', () => {
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
-            "data": {},
+            'data': {},
             'method': 'POST',
-            "params": {},
+            'params': {},
             'url': `/workspace/${workspaceId}/runtime`,
         });
     });
@@ -83,9 +83,9 @@ describe('RestAPI >', () => {
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
             'baseURL': '/api',
-            "data": {},
+            'data': {},
             'method': 'POST',
-            "params": {"debug-workspace-start": true},
+            'params': {'debug-workspace-start': true},
             'url': `/workspace/${workspaceId}/runtime`,
         });
     });

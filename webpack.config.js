@@ -1,23 +1,19 @@
 const path = require('path');
 
-var server = {
+const server = {
     entry: './src/index.ts',
-    devtool: 'source-map',
+    mode: 'production',
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                use: [
-                    {
-                        loader: 'ts-loader',
-                    }
-                ],
-                exclude: /node_modules/
-            }
+                use: ['ts-loader'],
+                exclude: /node_modules/,
+            },
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
     },
     target: 'node',
     output: {
@@ -25,40 +21,46 @@ var server = {
         library: 'workspace-client',
         libraryTarget: 'umd',
         globalObject: 'this',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'dist'),
+        clean: true,
     }
 };
 
-var client = {
+const client = {
     entry: './src/index.ts',
-    devtool: 'source-map',
+    mode: 'production',
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                use: [
-                    {
-                        loader: 'ts-loader',
-                    }
-                ],
-                exclude: /node_modules/
-            }
+                use: ['ts-loader'],
+                exclude: /node_modules/,
+            },
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
+        fallback: {
+            'fs': false,
+            'net': false,
+            'path': false,
+            'util': false,
+            'assert': false,
+            'url': false,
+            'http': false,
+            'https': false,
+            'tls': false,
+        },
     },
     target: 'web',
-    node: {
-        fs: 'empty',
-        net: 'empty',
-        tls: 'empty'
-    },
+    node: { global: true },
     output: {
         filename: 'client.js',
         library: 'workspace-client',
         libraryTarget: 'umd',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'dist'),
+        globalObject: 'this',
+        clean: true,
     }
 };
 
