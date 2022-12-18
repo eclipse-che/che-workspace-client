@@ -21,7 +21,7 @@ export class Deferred<T> implements IDeferred<T> {
     reject: (value?: T) => void = () => { return; };
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
-            this.resolve = resolve as (value?: T | undefined) => void;
+            this.resolve = resolve;
             this.reject = reject;
         });
     }
