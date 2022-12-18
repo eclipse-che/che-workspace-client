@@ -27,7 +27,7 @@ const server = {
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: ['.ts', '.js']
     },
     target: 'node',
     output: {
@@ -35,8 +35,7 @@ const server = {
         library: 'workspace-client',
         libraryTarget: 'umd',
         globalObject: 'this',
-        path: path.resolve(__dirname, 'dist'),
-        clean: true,
+        path: path.resolve(__dirname, 'dist')
     }
 };
 
@@ -67,28 +66,19 @@ const client = {
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js'],
-        fallback: {
-            'fs': false,
-            'net': false,
-            'path': false,
-            'util': false,
-            'assert': false,
-            'url': false,
-            'http': false,
-            'https': false,
-            'tls': false,
-        },
+        extensions: ['.ts', '.js']
     },
     target: 'web',
-    node: { global: true },
+  node: {
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty'
+  },
     output: {
         filename: 'client.js',
         library: 'workspace-client',
         libraryTarget: 'umd',
-        path: path.resolve(__dirname, 'dist'),
-        globalObject: 'this',
-        clean: true,
+        path: path.resolve(__dirname, 'dist')
     }
 };
 
