@@ -1,3 +1,5 @@
+
+
 /*
  * Copyright (c) 2018-2021 Red Hat, Inc.
  * This program and the accompanying materials are made
@@ -10,10 +12,11 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-declare module 'websocket' {
-  export const w3cwebsocket: IW3CWebSocket;
+const base = require('./jest.config.base');
 
-  export interface IW3CWebSocket {
-    new (entryPoint: string): void;
-  }
-}
+module.exports = {
+  ...base,
+  projects: [
+    '<rootDir>/jest.config.js'
+  ],
+};
