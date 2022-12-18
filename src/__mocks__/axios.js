@@ -8,11 +8,11 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-const mockAxios = jest.genMockFromModule('axios')
+const mockAxios = jest.genMockFromModule('axios');
 
 // this is the key to fix the axios.create() undefined error!
-mockAxios.create = jest.fn(() => mockAxios)
-mockAxios.get = jest.fn(() => Promise.resolve({ data: {} }))
-mockAxios.request = jest.fn(() => Promise.resolve({ data: {} }))
+mockAxios.create = jest.fn(() => mockAxios);
+mockAxios.get = jest.fn(() => Promise.resolve({ data: {} }));
+mockAxios.request = jest.fn(() => Promise.resolve({ data: {} }));
 
-module.exports = mockAxios
+module.exports = mockAxios;

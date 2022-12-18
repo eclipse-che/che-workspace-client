@@ -9,11 +9,3 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-
-declare module 'websocket' {
-  export const w3cwebsocket: IW3CWebSocket;
-
-  export interface IW3CWebSocket {
-    new (entryPoint: string): void;
-  }
-}
