@@ -14,9 +14,8 @@ on:
       - "main"
 
 jobs:
-
-  build-and-publish:
-    runs-on: ubuntu-20.04
+  build:
+    runs-on: ubuntu-22.04
     steps:
       -
         name: "Checkout workspace-client source code"
