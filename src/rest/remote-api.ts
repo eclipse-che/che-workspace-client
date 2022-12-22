@@ -108,60 +108,6 @@ export interface IRemoteAPI {
    */
   getAll<T = che.workspace.Workspace>(): Promise<T[]>;
   /**
-   * Returns list of workspaces in the namespace.
-   *
-   * @param namespace
-   */
-  getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]>;
-  /**
-   * Returns a workspace by ID or key.
-   *
-   * @param workspaceKey workspace ID or `namespace/workspaceName`
-   */
-  getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T>;
-  /**
-   * Creates a new workspace from devfile.
-   *
-   * @param devfile workspace devfile.
-   * @param params optional creating params.
-   */
-  create<T = che.workspace.Workspace>(
-    devfile: che.workspace.devfile.Devfile,
-    params?: IResourceCreateParams,
-  ): Promise<T>;
-  /**
-   * Updates the workspace.
-   *
-   * @param workspaceId a workspace ID to update
-   * @param workspace a new workspace data
-   */
-  update<T = che.workspace.Workspace>(
-    workspaceId: string,
-    workspace: che.workspace.Workspace,
-  ): Promise<T>;
-  /**
-   * Deletes the workspace.
-   *
-   * @param workspaceId a workspace ID to delete
-   */
-  delete(workspaceId: string): Promise<void>;
-  /**
-   * Starts the workspace.
-   *
-   * @param workspaceId a workspace ID.
-   * @param params resource query params.
-   */
-  start<T = che.workspace.Workspace>(
-    workspaceId: string,
-    params?: IResourceQueryParams,
-  ): Promise<T>;
-  /**
-   * Stops the workspace.
-   *
-   * @param workspaceId a workspace ID.
-   */
-  stop(workspaceId: string): Promise<void>;
-  /**
    * Returns settings.
    */
   getSettings<T = WorkspaceSettings>(): Promise<T>;
@@ -224,12 +170,6 @@ export interface IRemoteAPI {
    */
   provisionKubernetesNamespace(): Promise<KubernetesNamespace>;
   /**
-   * Returns the devfile JSON Schema.
-   *
-   * @param version a devfile version.
-   */
-  getDevfileSchema<T>(version?: string): Promise<T>;
-  /**
    * Returns the che server api information
    */
   getApiInfo<T>(): Promise<T>;
@@ -264,124 +204,6 @@ export class RemoteAPI implements IRemoteAPI {
     this.saveRequestPromise(key, newPromise);
 
     return newPromise;
-  }
-
-  public getAllByNamespace<T = che.workspace.Workspace>(namespace: string): Promise<T[]> {
-    const key = this.buildKey(METHOD.getAllByNamespace, namespace);
-    const promise = this.getRequestPromise(key);
-    if (promise) {
-      return promise;
-    }
-
-    const newPromise = new Promise<T[]>((resolve, reject) => {
-      this.remoteAPI
-        .getAllByNamespace<T>(namespace)
-        .then((response: AxiosResponse<T[]>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-    this.saveRequestPromise(key, newPromise);
-
-    return newPromise;
-  }
-
-  public getById<T = che.workspace.Workspace>(workspaceKey: string): Promise<T> {
-    const key = this.buildKey(METHOD.getAllByNamespace, workspaceKey);
-    const promise = this.getRequestPromise(key);
-    if (promise) {
-      return promise;
-    }
-
-    const newPromise = new Promise<T>((resolve, reject) => {
-      this.remoteAPI
-        .getById<T>(workspaceKey)
-        .then((response: AxiosResponse<T>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-    this.saveRequestPromise(key, newPromise);
-
-    return newPromise;
-  }
-
-  public create<T = che.workspace.Workspace>(
-    devfile: che.workspace.devfile.Devfile,
-    params?: IResourceCreateParams,
-  ): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.remoteAPI
-        .create(devfile, params)
-        .then((response: AxiosResponse<any>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-  }
-
-  public update<T = che.workspace.Workspace>(
-    workspaceId: string,
-    workspace: che.workspace.Workspace,
-  ): Promise<T> {
-    return new Promise<any>((resolve, reject) => {
-      this.remoteAPI
-        .update(workspaceId, workspace)
-        .then((response: AxiosResponse<any>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-  }
-
-  public delete(workspaceId: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.remoteAPI
-        .delete(workspaceId)
-        .then((response: AxiosResponse<any>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-  }
-
-  public start<T = che.workspace.Workspace>(
-    workspaceId: string,
-    params?: IResourceQueryParams,
-  ): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.remoteAPI
-        .start(workspaceId, params)
-        .then((response: AxiosResponse<any>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-  }
-
-  public stop(workspaceId: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.remoteAPI
-        .stop(workspaceId)
-        .then(() => {
-          resolve();
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
   }
 
   public getSettings<T = WorkspaceSettings>(): Promise<T> {
@@ -631,19 +453,6 @@ export class RemoteAPI implements IRemoteAPI {
       this.remoteAPI
         .provisionKubernetesNamespace()
         .then((response: AxiosResponse<KubernetesNamespace>) => {
-          resolve(response.data);
-        })
-        .catch((error: AxiosError) => {
-          reject(new RequestError(error));
-        });
-    });
-  }
-
-  getDevfileSchema<T>(version?: string): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.remoteAPI
-        .getDevfileSchema<T>(version)
-        .then((response: AxiosResponse<T>) => {
           resolve(response.data);
         })
         .catch((error: AxiosError) => {

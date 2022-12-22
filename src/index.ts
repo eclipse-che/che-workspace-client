@@ -13,12 +13,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { IRemoteAPI, RemoteAPI } from './rest/remote-api';
 import { Resources } from './rest/resources';
-import {
-  IWorkspaceMasterApi,
-  RefreshToken,
-  WorkspaceMasterApi,
-} from './json-rpc/workspace-master-api';
-import { WebSocketClient } from './json-rpc/web-socket-client';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
@@ -26,7 +20,6 @@ import * as url from 'url';
 import * as tunnel from 'tunnel';
 
 export * from './rest/remote-api';
-export * from './json-rpc/workspace-master-api';
 
 export interface IRestAPIConfig {
   baseUrl?: string;
@@ -69,14 +62,6 @@ export default class WorkspaceClient {
 
     const resources = new Resources(axios, baseUrl);
     return new RemoteAPI(resources);
-  }
-
-  public static getJsonRpcApi(
-    entryPoint: string,
-    refreshToken?: RefreshToken,
-  ): IWorkspaceMasterApi {
-    const transport = new WebSocketClient();
-    return new WorkspaceMasterApi(transport, entryPoint, refreshToken);
   }
 
   private static createAxiosInstance(config: IRestAPIConfig): AxiosInstance {

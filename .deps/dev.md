@@ -361,6 +361,7 @@
 | [`is-number@3.0.0`](https://github.com/jonschlinkert/is-number.git) | MIT | clearlydefined |
 | [`is-plain-object@2.0.4`](https://github.com/jonschlinkert/is-plain-object.git) | MIT | clearlydefined |
 | [`is-stream@2.0.1`](https://github.com/sindresorhus/is-stream.git) | MIT | clearlydefined |
+| [`is-typedarray@1.0.0`](git://github.com/hughsk/is-typedarray.git) | MIT | #2531 |
 | [`is-windows@1.0.2`](https://github.com/jonschlinkert/is-windows.git) | MIT | clearlydefined |
 | [`is-wsl@1.1.0`](https://github.com/sindresorhus/is-wsl.git) | MIT | clearlydefined |
 | [`isarray@1.0.0`](git://github.com/juliangruber/isarray.git) | MIT | clearlydefined |
@@ -637,6 +638,7 @@
 | [`type-check@0.3.2`](git://github.com/gkz/type-check.git) | MIT | clearlydefined |
 | [`type-detect@4.0.8`](git+ssh://git@github.com/chaijs/type-detect.git) | MIT | clearlydefined |
 | [`type-fest@0.20.2`](https://github.com/sindresorhus/type-fest.git) | (MIT OR CC0-1.0) | clearlydefined |
+| [`typedarray-to-buffer@3.1.5`](git://github.com/feross/typedarray-to-buffer.git) | MIT | clearlydefined |
 | [`typedarray@0.0.6`](git://github.com/substack/typedarray.git) | MIT | clearlydefined |
 | [`typescript@4.4.4`](https://github.com/Microsoft/TypeScript.git) | Apache-2.0 | #1524 |
 | [`union-value@1.0.1`](https://github.com/jonschlinkert/union-value.git) | MIT | clearlydefined |
