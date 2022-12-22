@@ -1,15 +1,17 @@
-/*********************************************************************
- * Copyright (c) 2018 Red Hat, Inc.
- *
+/*
+ * Copyright (c) 2018-2021 Red Hat, Inc.
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- **********************************************************************/
-'use strict';
-import {JsonRpcClient} from './json-rpc-client';
-import {IClientEventHandler, ICommunicationClient} from './web-socket-client';
+ *
+ * Contributors:
+ *   Red Hat, Inc. - initial API and implementation
+ */
+
+import { JsonRpcClient } from './json-rpc-client';
+import { IClientEventHandler, ICommunicationClient } from './web-socket-client';
 
 /**
  * Class for basic CHE API communication methods.
@@ -26,7 +28,7 @@ export class JsonRpcApiClient {
    */
   private client: ICommunicationClient;
 
-  constructor (client: ICommunicationClient) {
+  constructor(client: ICommunicationClient) {
     this.client = client;
     this.jsonRpcClient = new JsonRpcClient(client);
   }
@@ -52,7 +54,12 @@ export class JsonRpcApiClient {
    * @param handler handler to be removed
    * @param params params (optional)
    */
-  unsubscribe(event: string, notification: string, handler: IClientEventHandler, params?: any): void {
+  unsubscribe(
+    event: string,
+    notification: string,
+    handler: IClientEventHandler,
+    params?: any,
+  ): void {
     this.jsonRpcClient.removeNotificationHandler(notification, handler);
     this.jsonRpcClient.notify(event, params);
   }

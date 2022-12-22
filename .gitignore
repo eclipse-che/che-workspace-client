@@ -1,3 +1,9 @@
 .vscode/
-dist/
+
 node_modules/
+
+dist/
+coverage/
+
+tsconfig.tsbuildinfo
+.eslintcache
