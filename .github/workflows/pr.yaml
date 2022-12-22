@@ -17,7 +17,7 @@ on:
 jobs:
 
   dash-licenses:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       -
         name: "Checkout workspace-client source code"
@@ -35,7 +35,7 @@ jobs:
         run: yarn license:check
 
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         node-version: [14.x, 16.x]

@@ -10,9 +10,17 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-const base = require('./jest.config.base');
-
 module.exports = {
-  ...base,
-  projects: ['<rootDir>/jest.config.js'],
+  roots: ['<rootDir>'],
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+  },
+  moduleFileExtensions: ['ts', 'js'],
+  testMatch: ['**/*.spec.ts'],
+  collectCoverage: false,
+  collectCoverageFrom: ['**/src/**/*.ts'],
+  testPathIgnorePatterns: ['/dist/', '/node_modules/'],
+  coverageReporters: ['html', 'lcov', 'text-summary'],
+  maxWorkers: 4,
+  verbose: true,
 };

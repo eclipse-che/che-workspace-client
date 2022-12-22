@@ -6,8 +6,7 @@
   "browser": "dist/client.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prepare": "yarn run build",
-    "build": "webpack-cli --mode production --config webpack.config.js",
+    "build": "rimraf dist && webpack-cli --mode production --config webpack.config.js",
     "test": "jest",
     "lint:check": "tsc --project ./tsconfig.json --noEmit && eslint '{src,test}/**/*.ts'",
     "lint:fix": "tsc --project ./tsconfig.json --noEmit && eslint '{src,test}/**/*.ts' --fix",
@@ -45,6 +44,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^25.5.4",
     "prettier": "^2.4.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^25.5.1",
     "ts-loader": "^7.0.5",
     "typescript": "~4.4.2",
