@@ -67,58 +67,6 @@ describe('RestAPI >', () => {
     expect(preferences.key2).toBe(5);
   });
 
-  it('should start the workspace', async () => {
-    const workspaceId = 'testWorkspaceId12345';
-    axios.request.mockImplementationOnce(() => Promise.resolve({ status: 200 }));
-    await restApi.start(workspaceId, undefined);
-
-    expect(axios.request).toHaveBeenCalledTimes(1);
-    expect(axios.request).toHaveBeenCalledWith({
-      baseURL: '/api',
-      data: {},
-      method: 'POST',
-      params: {},
-      url: `/workspace/${workspaceId}/runtime`,
-    });
-  });
-
-  it('should start the workspace in debug mode', async () => {
-    const workspaceId = 'testWorkspaceId12345';
-    axios.request.mockImplementationOnce(() => Promise.resolve({ status: 200 }));
-    await restApi.start(workspaceId, { 'debug-workspace-start': true });
-
-    expect(axios.request).toHaveBeenCalledTimes(1);
-    expect(axios.request).toHaveBeenCalledWith({
-      baseURL: '/api',
-      data: {},
-      method: 'POST',
-      params: { 'debug-workspace-start': true },
-      url: `/workspace/${workspaceId}/runtime`,
-    });
-  });
-
-  it('should returns devfile schema', async () => {
-    const devfileSchema = {
-      'meta:license': ['dummy', 'license'],
-      $schema: 'http://json-schema.org/draft-07/schema#',
-      type: 'object',
-      title: 'Dummy devfile object',
-      description: 'This dummy test schema describes the structure of the devfile object',
-    };
-    axios.request.mockImplementationOnce(() =>
-      Promise.resolve({ status: 200, data: devfileSchema }),
-    );
-    const schema = await restApi.getDevfileSchema();
-
-    expect(axios.request).toHaveBeenCalledTimes(1);
-    expect(axios.request).toHaveBeenCalledWith({
-      baseURL: '/api',
-      method: 'GET',
-      url: '/devfile',
-    });
-    expect(schema).toBe(devfileSchema);
-  });
-
   it('should returns list of kubernetes namespace', async () => {
     const kubernetesNamespaces = [
       { name: 'che-che', attributes: { phase: 'Active', default: 'true' } },

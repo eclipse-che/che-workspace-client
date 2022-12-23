@@ -12,7 +12,6 @@
 
 import { AxiosInstance, AxiosPromise, AxiosRequestConfig } from 'axios';
 import { che } from '@eclipse-che/api';
-import * as Qs from 'qs';
 
 export interface FactoryResolver {
   v: string;
@@ -63,16 +62,6 @@ export interface User {
 
 export interface IResources {
   getAll<T>(): AxiosPromise<T[]>;
-  getAllByNamespace<T>(namespace: string): AxiosPromise<T[]>;
-  getById<T>(workspaceKey: string): AxiosPromise<T>;
-  create<T>(
-    devfile: che.workspace.devfile.Devfile,
-    createParams: IResourceCreateParams | undefined,
-  ): AxiosPromise<T>;
-  update<T>(workspaceId: string, workspace: che.workspace.Workspace): AxiosPromise<T>;
-  delete(workspaceId: string): AxiosPromise<void>;
-  start<T>(workspaceId: string, params: IResourceQueryParams | undefined): AxiosPromise<T>;
-  stop(workspaceId: string): AxiosPromise<void>;
   getSettings<T>(): AxiosPromise<T>;
   getFactoryResolver<T>(
     url: string,
@@ -83,20 +72,19 @@ export interface IResources {
   createSshKey(sshKeyPair: che.ssh.SshPair): AxiosPromise<void>;
   getSshKey<T>(service: string, name: string): AxiosPromise<T>;
   getAllSshKey<T>(service: string): AxiosPromise<T[]>;
-  getOAuthProviders(): AxiosPromise<any[]>;
   deleteSshKey(service: string, name: string): AxiosPromise<void>;
+  getOAuthProviders(): AxiosPromise<any[]>;
+  getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
+  deleteOAuthToken(oAuthProvider: string): AxiosPromise<void>;
   getCurrentUser(): AxiosPromise<User>;
   getCurrentUserProfile(): AxiosPromise<che.user.Profile>;
   getUserPreferences(filter: string | undefined): AxiosPromise<Preferences>;
   updateUserPreferences(update: Preferences): AxiosPromise<Preferences>;
   replaceUserPreferences(preferences: Preferences): AxiosPromise<Preferences>;
   deleteUserPreferences(list: string[] | undefined): AxiosPromise<void>;
-  getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
-  deleteOAuthToken(oAuthProvider: string): AxiosPromise<void>;
   updateActivity(workspaceId: string): AxiosPromise<void>;
   getKubernetesNamespace<T>(): AxiosPromise<T>;
   provisionKubernetesNamespace(): AxiosPromise<KubernetesNamespace>;
-  getDevfileSchema<T>(version?: string): AxiosPromise<T>;
   getApiInfo<T>(): AxiosPromise<T>;
 }
 
@@ -122,79 +110,6 @@ export class Resources implements IResources {
       method: 'GET',
       baseURL: this.baseUrl,
       url: this.workspaceUrl,
-    });
-  }
-
-  public getAllByNamespace<T>(namespace: string): AxiosPromise<T[]> {
-    return this.axios.request<T[]>({
-      method: 'GET',
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/namespace/${namespace}`,
-    });
-  }
-
-  public getById<T>(workspaceKey: string): AxiosPromise<T> {
-    return this.axios.request<T>({
-      method: 'GET',
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/${workspaceKey}`,
-    });
-  }
-
-  public create<T>(
-    devfile: che.workspace.devfile.Devfile,
-    createParams: IResourceCreateParams = {},
-  ): AxiosPromise<T> {
-    const { attributes, namespace, infrastructureNamespace } = createParams;
-    const attr = attributes ? Object.keys(attributes).map(key => `${key}:${attributes[key]}`) : [];
-    return this.axios.request<T>({
-      method: 'POST',
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/devfile`,
-      data: devfile,
-      params: {
-        attribute: attr,
-        namespace: namespace,
-        'infrastructure-namespace': infrastructureNamespace,
-      },
-      paramsSerializer: function (params) {
-        return Qs.stringify(params, { arrayFormat: 'repeat' });
-      },
-    });
-  }
-
-  public update<T>(workspaceId: string, workspace: che.workspace.Workspace): AxiosPromise<T> {
-    return this.axios.request<any>({
-      method: 'PUT',
-      data: workspace,
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/${workspaceId}`,
-    });
-  }
-
-  public delete(workspaceId: string): AxiosPromise<void> {
-    return this.axios.request<void>({
-      method: 'DELETE',
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/${workspaceId}`,
-    });
-  }
-
-  public start<T>(workspaceId: string, params: IResourceQueryParams | undefined): AxiosPromise<T> {
-    return this.axios.request<T>({
-      method: 'POST',
-      data: {},
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/${workspaceId}/runtime`,
-      params: params ? params : {},
-    });
-  }
-
-  public stop(workspaceId: string): AxiosPromise<void> {
-    return this.axios.request<void>({
-      method: 'DELETE',
-      baseURL: this.baseUrl,
-      url: `${this.workspaceUrl}/${workspaceId}/runtime`,
     });
   }
 
@@ -358,20 +273,6 @@ export class Resources implements IResources {
       baseURL: this.baseUrl,
       url: `/activity/${workspaceId}`,
     });
-  }
-
-  public getDevfileSchema<T>(version?: string): AxiosPromise<T> {
-    const requestOptions = {
-      method: 'GET',
-      baseURL: this.baseUrl,
-      url: this.devfileUrl,
-    } as AxiosRequestConfig;
-    if (version) {
-      requestOptions.params = {
-        version,
-      };
-    }
-    return this.axios.request<T>(requestOptions);
   }
 
   public getKubernetesNamespace<T>(): AxiosPromise<T> {
