@@ -2,7 +2,15 @@ github_checks:
   annotations: false
 comment:
   layout: "reach, diff, flags, files"
-  behavior: default
-  require_changes: false
-  require_base: no
-  require_head: yes
+
+    behavior: default
+    require_changes: false
+
+    require_base: false
+
+    require_head: true
+
+    branches:
+      - "main"
+
+    show_carryforward_flags: false
