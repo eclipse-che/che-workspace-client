@@ -17,24 +17,13 @@ import {
   Preferences,
   User,
   KubernetesNamespace,
-  IResourceQueryParams,
-  IResourceCreateParams,
   FactoryResolver,
+  IOAuthProvider,
 } from './resources';
 import { che } from '@eclipse-che/api';
 
 export enum METHOD {
   getAll,
-  getAllByNamespace,
-  fetchById,
-
-  create,
-  update,
-  delete,
-  start,
-  startTemporary,
-  stop,
-
   getSettings,
 }
 
@@ -154,7 +143,7 @@ export interface IRemoteAPI {
   /**
    * Return list of registered oAuth providers.
    */
-  getOAuthProviders(): Promise<{ name: string,  endpointUrl: string }[]>;
+  getOAuthProviders(): Promise<IOAuthProvider[]>;
   /**
    * Updates workspace activity timestamp to prevent stop by timeout when workspace is running and using.
    *
@@ -422,15 +411,17 @@ export class RemoteAPI implements IRemoteAPI {
     });
   }
 
-  getOAuthProviders(): Promise<{ name: string,  endpointUrl: string }[]> {
-    return new Promise<{ name: string,  endpointUrl: string }[]>((resolve, reject) => {
+  getOAuthProviders(): Promise<IOAuthProvider[]> {
+    return new Promise<IOAuthProvider[]>((resolve, reject) => {
       this.remoteAPI
         .getOAuthProviders()
         .then((response: AxiosResponse<any[]>) => {
-          resolve(response.data.map(provider => {
-            const { name,  endpointUrl } = provider;
-            return { name,  endpointUrl}
-          }));
+          resolve(
+            response.data.map(provider => {
+              const { name, endpointUrl } = provider;
+              return { name, endpointUrl };
+            }),
+          );
         })
         .catch((error: AxiosError) => {
           reject(new RequestError(error));
