@@ -7,7 +7,7 @@
 | [`@babel/compat-data@7.20.5`](https://github.com/babel/babel.git) | MIT | #4653 |
 | [`@babel/core@7.20.5`](https://github.com/babel/babel.git) | MIT | #4666 |
 | [`@babel/generator@7.20.5`](https://github.com/babel/babel.git) | MIT | #4572 |
-| [`@babel/helper-compilation-targets@7.20.0`](https://github.com/babel/babel.git) | MIT | clearlydefined |
+| [`@babel/helper-compilation-targets@7.20.0`](https://github.com/babel/babel.git) | MIT | [clearlydefined](https://clearlydefined.io/definitions/npm/npmjs/@babel/helper-compilation-targets/7.20.0) |
 | [`@babel/helper-environment-visitor@7.18.9`](https://github.com/babel/babel.git) | MIT | clearlydefined |
 | [`@babel/helper-function-name@7.19.0`](https://github.com/babel/babel.git) | MIT | clearlydefined |
 | [`@babel/helper-hoist-variables@7.18.6`](https://github.com/babel/babel.git) | MIT | clearlydefined |
