@@ -73,7 +73,7 @@ export interface IResources {
   getSshKey<T>(service: string, name: string): AxiosPromise<T>;
   getAllSshKey<T>(service: string): AxiosPromise<T[]>;
   deleteSshKey(service: string, name: string): AxiosPromise<void>;
-  getOAuthProviders(): AxiosPromise<any[]>;
+  getOAuthProviders(): AxiosPromise<{ name: string,  endpointUrl: string }[]>;
   getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
   deleteOAuthToken(oAuthProvider: string): AxiosPromise<void>;
   getCurrentUser(): AxiosPromise<User>;
@@ -259,8 +259,8 @@ export class Resources implements IResources {
     });
   }
 
-  public getOAuthProviders(): AxiosPromise<any[]> {
-    return this.axios.request<any[]>({
+  public getOAuthProviders(): AxiosPromise<{ name: string,  endpointUrl: string }[]> {
+    return this.axios.request<{ name: string,  endpointUrl: string }[]>({
       method: 'GET',
       baseURL: this.baseUrl,
       url: '/oauth',

@@ -154,7 +154,7 @@ export interface IRemoteAPI {
   /**
    * Return list of registered oAuth providers.
    */
-  getOAuthProviders(): Promise<string[]>;
+  getOAuthProviders(): Promise<{ name: string,  endpointUrl: string }[]>;
   /**
    * Updates workspace activity timestamp to prevent stop by timeout when workspace is running and using.
    *
@@ -422,12 +422,15 @@ export class RemoteAPI implements IRemoteAPI {
     });
   }
 
-  getOAuthProviders(): Promise<string[]> {
-    return new Promise<string[]>((resolve, reject) => {
+  getOAuthProviders(): Promise<{ name: string,  endpointUrl: string }[]> {
+    return new Promise<{ name: string,  endpointUrl: string }[]>((resolve, reject) => {
       this.remoteAPI
         .getOAuthProviders()
         .then((response: AxiosResponse<any[]>) => {
-          resolve(response.data.map(provider => provider.name));
+          resolve(response.data.map(provider => {
+            const { name,  endpointUrl } = provider;
+            return { name,  endpointUrl}
+          }));
         })
         .catch((error: AxiosError) => {
           reject(new RequestError(error));
