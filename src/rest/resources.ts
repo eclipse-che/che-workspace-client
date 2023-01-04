@@ -60,6 +60,11 @@ export interface User {
   email: string;
 }
 
+export interface IOAuthProvider {
+  name: string;
+  endpointUrl: string;
+}
+
 export interface IResources {
   getAll<T>(): AxiosPromise<T[]>;
   getSettings<T>(): AxiosPromise<T>;
@@ -73,7 +78,7 @@ export interface IResources {
   getSshKey<T>(service: string, name: string): AxiosPromise<T>;
   getAllSshKey<T>(service: string): AxiosPromise<T[]>;
   deleteSshKey(service: string, name: string): AxiosPromise<void>;
-  getOAuthProviders(): AxiosPromise<any[]>;
+  getOAuthProviders(): AxiosPromise<IOAuthProvider[]>;
   getOAuthToken(oAuthProvider: string): AxiosPromise<{ token: string }>;
   deleteOAuthToken(oAuthProvider: string): AxiosPromise<void>;
   getCurrentUser(): AxiosPromise<User>;
@@ -259,8 +264,8 @@ export class Resources implements IResources {
     });
   }
 
-  public getOAuthProviders(): AxiosPromise<any[]> {
-    return this.axios.request<any[]>({
+  public getOAuthProviders(): AxiosPromise<IOAuthProvider[]> {
+    return this.axios.request<IOAuthProvider[]>({
       method: 'GET',
       baseURL: this.baseUrl,
       url: '/oauth',
